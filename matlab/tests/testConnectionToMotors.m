@@ -1,13 +1,13 @@
 clc; clear all;
 API = vrepApiWrapper;
-API.startConnection('127.0.0.1', 19997);
+API.startConnection('127.0.0.1', 19999);
 
-tolerance = 0.01;
+tolerance = 1;
 
 assert(API.clientID ~= -1, 'Connection not succesful, is the simulation running?')
 assert(API.rightMotor ~= -1);
 assert(API.leftMotor ~= -1);
-assert(API.steeringJoint ~= -1);
+assert(API.steeringMotor ~= -1);
 
 display('Set velocities to zero')
 API.setMotorVelocities(0,0);
@@ -23,8 +23,10 @@ assert(abs(vr) < tolerance, 'Could not slow down the right wheel')
 assert(abs(steeringPos) < tolerance, 'Could not set steering position to zero')
 
 display('Set motor velocities');
-targetVel = 0.5;
+targetVel = 0.005;
 API.setMotorVelocities(targetVel,targetVel);
+% API.setSteeringAngleTarget(1.57);
+% API.setForkMotorPositionTarget(1);
 
 for i = 1:500
  API.triggerStep();
@@ -35,7 +37,7 @@ assert(abs(vl - targetVel) < tolerance, 'Could not speed up the left wheel')
 assert(abs(vr - targetVel) < tolerance, 'Could not speed up the right wheel')
 
 
-display('Set velocities to zero')
+display('Set steering angle')
 API.setMotorVelocities(0,0);
 API.setSteeringAngleTarget(1.57);
 
