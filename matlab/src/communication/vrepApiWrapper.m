@@ -90,6 +90,11 @@ classdef vrepApiWrapper < handle
         function setSteeringAngleTarget(self, targetAngle)
           self.setJointTargetPositionStream(self.steeringMotor, targetAngle);
         end
+
+        function forkPosition = getForkPosition(self)
+          [returnCode, forkPosition] = self.getJointPositionBuffer(self.forkMotor);
+          self.handleReturnValue(returnCode);
+        end
         
         function setForkMotorPositionTarget(self, targetPosition)
           self.setJointTargetPositionStream(self.forkMotor, targetPosition);
