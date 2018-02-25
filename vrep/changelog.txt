@@ -1,2 +1,4 @@
 2018.02.25 20:45 Rácz Dániel:
 	- Fix position control in position controlled motors in AGV.ttt
+2018.02.25 22:18 Rácz Dániel
+	- Add fork to remoteApiModel.ttt
