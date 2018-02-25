@@ -6,7 +6,8 @@ classdef vrepApiWrapper < handle
 
         leftMotor
         rightMotor;
-        steeringJoint;
+        steeringMotor;
+        forkMotor;
 
         jointVelocityParamID = 2012;
     end
@@ -51,16 +52,19 @@ classdef vrepApiWrapper < handle
         function getObjectHandles(self, clientID)
             [error,self.leftMotor]     = self.vrep.simxGetObjectHandle(clientID,'leftMotor'    ,self.vrep.simx_opmode_oneshot_wait);
             [error,self.rightMotor]    = self.vrep.simxGetObjectHandle(clientID,'rightMotor'   ,self.vrep.simx_opmode_oneshot_wait);
-            [error,self.steeringJoint] = self.vrep.simxGetObjectHandle(clientID,'steeringJoint',self.vrep.simx_opmode_oneshot_wait);
+            [error,self.steeringMotor] = self.vrep.simxGetObjectHandle(clientID,'steeringMotor',self.vrep.simx_opmode_oneshot_wait);
+            [error,self.forkMotor]     = self.vrep.simxGetObjectHandle(clientID,'forkMotor',self.vrep.simx_opmode_oneshot_wait);
         end
 
         function initializeMotors(self, clientID)
           [returnCode] = self.vrep.simxSetJointTargetVelocity(clientID, self.leftMotor,     0     , self.vrep.simx_opmode_oneshot_wait);
           [returnCode] = self.vrep.simxSetJointTargetVelocity(clientID, self.rightMotor,    0     , self.vrep.simx_opmode_oneshot_wait);
-          [returnCode] = self.vrep.simxSetJointTargetPosition(clientID, self.steeringJoint, 0     , self.vrep.simx_opmode_oneshot_wait);
+          [returnCode] = self.vrep.simxSetJointTargetPosition(clientID, self.steeringMotor, 0     , self.vrep.simx_opmode_oneshot_wait);
+          [returnCode] = self.vrep.simxSetJointTargetPosition(clientID, self.forkMotor, 0         , self.vrep.simx_opmode_oneshot_wait);
           [returnCode, position] = self.vrep.simxGetJointPosition(clientID, self.leftMotor        , self.vrep.simx_opmode_streaming);
           [returnCode, position] = self.vrep.simxGetJointPosition(clientID, self.rightMotor       , self.vrep.simx_opmode_streaming);
-          [returnCode, position] = self.vrep.simxGetJointPosition(clientID, self.steeringJoint    , self.vrep.simx_opmode_streaming);
+          [returnCode, position] = self.vrep.simxGetJointPosition(clientID, self.steeringMotor    , self.vrep.simx_opmode_streaming);
+          [returnCode, position] = self.vrep.simxGetJointPosition(clientID, self.forkMotor    , self.vrep.simx_opmode_streaming);
           [returnCode, velocity] = self.vrep.simxGetObjectFloatParameter(clientID, self.leftMotor , self.jointVelocityParamID, self.vrep.simx_opmode_streaming);
           [returnCode, velocity] = self.vrep.simxGetObjectFloatParameter(clientID, self.rightMotor, self.jointVelocityParamID, self.vrep.simx_opmode_streaming);
         end
@@ -79,12 +83,16 @@ classdef vrepApiWrapper < handle
 
         %
         function steeringAngle = getSteeringAngle(self)
-          [returnCode, steeringAngle] = self.getJointPositionBuffer(self.steeringJoint);
+          [returnCode, steeringAngle] = self.getJointPositionBuffer(self.steeringMotor);
           self.handleReturnValue(returnCode);
         end
 
         function setSteeringAngleTarget(self, targetAngle)
-          self.setJointTargetPositionStream(self.steeringJoint, targetAngle);
+          self.setJointTargetPositionStream(self.steeringMotor, targetAngle);
+        end
+        
+        function setForkMotorPositionTarget(self, targetPosition)
+          self.setJointTargetPositionStream(self.forkMotor, targetPosition);
         end
 
        function setJointVeloStream(self,ObjectHandle,TargetVelocity)
