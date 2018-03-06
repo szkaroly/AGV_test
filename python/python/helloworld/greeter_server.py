@@ -25,22 +25,24 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
+    def __init__(self):
+        self.myVariable = 10
+
+    def getMyVar(self):
+        return self.myVariable
+
+    def setMyVar(self, val):
+        self.myVariable = val
 
     def SayHello(self, request, context):
-        return helloworld_pb2.HelloReply(message='Hello Targonca, %s!' % request.name)
+        print('I got a request from a client named:{0}'.format(request.name))
+        return helloworld_pb2.HelloReply(message='Hello client! My Var is:{0}'.format(self.myVariable))
 
+    def serve(self):
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        helloworld_pb2_grpc.add_GreeterServicer_to_server(self, self.server)
+        self.server.add_insecure_port('[::]:50051')
+        self.server.start()
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    helloworld_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
-    server.add_insecure_port('[::]:50051')
-    server.start()
-    try:
-        while True:
-            time.sleep(_ONE_DAY_IN_SECONDS)
-    except KeyboardInterrupt:
-        server.stop(0)
-
-
-if __name__ == '__main__':
-    serve()
+    def stop(self):
+        self.server.stop(0)

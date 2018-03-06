@@ -28,5 +28,9 @@ def run():
     print("Greeter client received: " + response.message)
 
 
+import time
+
 if __name__ == '__main__':
-    run()
+    while True:
+        run()
+        time.sleep(1)
