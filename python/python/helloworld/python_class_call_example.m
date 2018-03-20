@@ -17,7 +17,7 @@ myService.serve()
 counter = 0;
 while true
     myService.setMyVar(counter);
-    display('Oy!')
+    display('Incrementing counter in matlab!')
     display(myService.getMyVar())
     pause(1)
     counter = counter +1;
