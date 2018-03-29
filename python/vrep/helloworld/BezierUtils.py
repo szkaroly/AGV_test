@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
         def testPlanarTransform(self):
             M  = planarTransform(45, np.matrix([[2], [2]]), 1.5)
-            self.assertAlmostEqual(M[(0,0)], 0.7880, places = 4)
+            self.assertAlmostEqual(M[(0,0)],  0.7880, places = 4)
             self.assertAlmostEqual(M[(0,1)], -1.2764, places = 4)
             self.assertAlmostEqual(M[(0,2)],  3.0000, places = 4)
             self.assertAlmostEqual(M[(1,0)],  1.2764, places = 4)
@@ -139,13 +139,6 @@ if __name__ == "__main__":
             expected = np.array([[2.4984, 2.2088, 2.0361, 2.0013, 2.0646, 2.1867, 2.3326, 2.4742, 2.5928, 2.6769, 2.7202],
                                  [0.0000, 2.3509, 2.7135, 2.6807, 2.2672, 1.7252, 1.2418, 0.8651, 0.5790, 0.3553, 0.1690]])
             np.testing.assert_array_almost_equal(reference_input, expected, decimal=4)
-
-
-
-        def test3(self):
-            pass
-                    #traj = test1()
-                    #generateReferenceInput(traj, 0.01)
 
 
     unittest.main()
