@@ -1,8 +1,6 @@
 import numpy as np
 from math import cos, sin, atan2
-import logging
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
 '''
@@ -85,7 +83,7 @@ def planarTransform(angle, position, scale):
     return scale * result
 
 
-# TODO : Write tests
+
 if __name__ == "__main__":
     import unittest
     class testBezierUtils(unittest.TestCase):
