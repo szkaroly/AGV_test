@@ -27,6 +27,11 @@ class vrepCommunicationAPI(object):
         self.steeringMotor = -1
         self.forkMotor = -1
 
+    def initialize(self):
+        self.startConnection()
+        self.getObjectHandles()
+        self.initializeMotors()
+
     def startConnection(self, ip='127.0.0.1', port=19997, synchronousMode=True):
         vrep.simxFinish(-1)
         self.clientID = vrep.simxStart(ip, port, True, True, 5000, 5)  # Connect to V-REP
@@ -38,6 +43,7 @@ class vrepCommunicationAPI(object):
             vrep.simxSynchronous(self.clientID, synchronousMode)
             # start the simulation:
             vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
+            self.getObjectHandles()
         else:
             self.logger.error("Connection failed to VREP!")
 
@@ -124,7 +130,7 @@ class vrepCommunicationAPI(object):
     def __setJointVeloStream(self, ObjectHandle, TargetVelocity):
         return_code = vrep.simxSetJointTargetVelocity(
             self.clientID, ObjectHandle, TargetVelocity, vrep.simx_opmode_streaming)
-        self.handleReturnValue(return_code)
+        self.handleReturnValue(return_code, msg = '__setJointVeloStream')
 
    # Set the target position for the joint ( streaming )
     def __setJointTargetPositionStream(self, ObjectHandle, TargetPosition):
@@ -162,31 +168,37 @@ class vrepCommunicationAPI(object):
         self.handleReturnValue(return_code)
         return linear_velocity, angular_velocity
 
-    def handleReturnValue(self, return_value):
+    def handleReturnValue(self, return_value, msg = ''):
         if return_value == 0:
             return  # This is fine
         elif return_value == 1:
             self.logger.debug(
                 '''There is no command reply in the input buffer ->
-                 Not always an error, deping on the mode its okay''')
+                 Not always an error, deping on the mode its okay''' + msg)
         elif return_value == 2:
-            self.logger.warning('The function timed out ')
+            self.logger.warning('The function timed out '+ msg)
         elif return_value == 4:
             self.logger.warning(
                 '''The specified operation mode is
-             not supported for the given function''')
+             not supported for the given function'''+ msg)
+            raise Exception('''The specified operation mode is
+             not supported for the given function'''+ msg)
         elif return_value == 8:
             self.logger.warning(
                 '''The function caused an error on the server side
-                 (e.g. an invalid handle was specified)''')
+                 (e.g. an invalid handle was specified)'''+ msg)
+            raise Exception('''The function caused an error on the server side
+             (e.g. an invalid handle was specified)'''+ msg)
         elif return_value == 16:
             self.logger.warning(
                 '''The communication thread is still processing
-             previous split command of the same type''')
+             previous split command of the same type'''+ msg)
+            raise Exception('''The communication thread is still processing
+          previous split command of the same type'''+ msg)
         elif return_value == 32:
-            self.logger.warning('The function caused an error on the client side')
+            self.logger.warning('The function caused an error on the client side'+ msg)
         elif return_value == 64:
-            self.logger.warning('simxStart was not yet called')
+            self.logger.warning('simxStart was not yet called'+ msg)
 
 
 if __name__ == "__main__":
