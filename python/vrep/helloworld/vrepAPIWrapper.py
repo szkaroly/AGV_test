@@ -46,6 +46,7 @@ class vrepCommunicationAPI(object):
             self.getObjectHandles()
         else:
             self.logger.error("Connection failed to VREP!")
+            raise Exception("Connection Failed!")
 
     def closeConnection(self):
         vrep.simxStopSimulation(self.clientID, vrep.simx_opmode_oneshot_wait)

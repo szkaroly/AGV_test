@@ -11,20 +11,20 @@ class velocityContainer(object):
         self.vr = []
         self.vl = []
 
-    def getNextVelocities(self):
+
+    def getNextVelocities(self) -> tuple:
+        """
+        :return: next velocities in the container, zero if there is none
+        """
         if len(self.vr) == 0:
-            return 0,0
+            return 0, 0
         else:
-            return self.vr.pop(),self.vl.pop()
+            return self.vr.pop(), self.vl.pop()
 
     def appendNewVelocityTrajectory(self, inputTrajectory):
         self.vr.append(inputTrajectory[0])
         self.vl.append(inputTrajectory[1])
-
-
-
-
-
+        
 class robot(object):
     def __init__(self):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
@@ -32,34 +32,37 @@ class robot(object):
         self.logger = logging.getLogger('robot')
         self.logger.setLevel('DEBUG')
         self.logger.debug("Initializing robot!")
-        self.VAL = vrepCommunicationAPI() #Creating VehicleAbstractionLayer
-        self.VAL.initialize()
-
+        self.val = vrepCommunicationAPI()  # Creating VehicleAbstractionLayer
+        self.val.initialize()
         self.vc = velocityContainer()
-
         self.logger.info("Robot instance has been initialized!")
 
     def appendNewVelocityTrajectory(self, trajectory):
         self.vc.appendNewVelocityTrajectory(trajectory)
 
     def executeTrajectory(self):
-        vr,vl = self.vc.getNextVelocities()
-        self.VAL.setMotorVelocities(vr, vl)
-        self.logger.debug("Sending velocities: %s | %s", vr, vl )
-        self.VAL.triggerStep()
-
+        vr, vl = self.vc.getNextVelocities()
+        self.val.setMotorVelocities(vr, vl)
+        self.logger.debug("Sending velocities: %s | %s", vr, vl)
+        self.val.triggerStep()
 
 
 if __name__ == "__main__":
     import math
-    myRobot = robot()
+
     try:
-        count = 0;
+        myRobot = robot()
+        count = 0
         while True:
             a = math.sin(count * 0.0174532925)
             count = count + 1
-            myRobot.appendNewVelocityTrajectory((a, a))
+            myRobot.appendNewVelocityTrajectory((a, a * 1.2))
             myRobot.executeTrajectory()
     except KeyboardInterrupt:
         print("KeyboardInterrupt received!")
-    myRobot.VAL.closeConnection()
+        myRobot.val.closeConnection()
+    except Exception as e:
+        print(e)
+    finally:
+        pass
+
