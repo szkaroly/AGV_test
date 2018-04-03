@@ -1,0 +1,8 @@
+
+*.ipynb
+*.idea
+*.meta.json
+*.data.json
+*/*/*/htmlcov/*
+.coverage
+/__pycache__
