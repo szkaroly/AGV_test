@@ -29,14 +29,12 @@ def generateBezier(P1: np.array, P2: np.array, P3: np.array, P4: np.array,
     return np.vstack([ReferencePosition[0], ReferencePosition[1], ReferenceOrientation])
 
 
-'''
+"""
 This function generates the reference velocity input (v, omega) for the vehicle
 ReferenceTrajectory : np.array  -> containing x,y, orientation values
 SamplingTime        : float     -> timestep
 XLIMIT              : float     -> ???
-'''
-
-
+"""
 def generateReferenceInput(ReferenceTrajectory: np.array, SamplingTime: float, XLIMIT=0.00001) -> np.array:
     N = len(ReferenceTrajectory[1])
     reference_input = np.empty([2, N - 1])
@@ -77,10 +75,9 @@ def planarRot(angle):
 # Planar Transform - checked
 def planarTransform(angle, position, scale):
     # new matrix is constructed via: [2x2 + 2x1]
-    #                               [0,  0, 1 ]
+    #                                [0,  0, 1 ]
     matrix = np.hstack([planarRot(angle), position])
     result = np.vstack([matrix, np.matrix([0, 0, 1])])
-    # matrix = np.matrix([planarRot(angle), position, np.matrix([0,0,1])])
     return scale * result
 
 
