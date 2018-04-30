@@ -2,7 +2,7 @@ from math import cos, sin, tan
 import numpy as np
 
 class DiffDriveKinematics():
-    def __init__(self, d = 0.25 , l = 1.5 ):
+    def __init__(self, d = 0.45 , l = 2):
         self.d = d
         self.l = l
         self.name = 'Diff Drive Kinematics'

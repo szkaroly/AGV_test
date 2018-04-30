@@ -57,14 +57,14 @@ if __name__ == "__main__":
     import numpy as np
     try:
         myRobot = robot()
-        tc = TrackingController()
+        tc = TrackingController(maxVel =5)
         dr = dataRecorder()
         dr_sim = dataRecorder()
         #Create reference trajectory & input velocity
         p1 = np.array([[0], [0]])
-        p2 = np.array([[1], [0]])
-        p3 = np.array([[10], [10]])
-        p4 = np.array([[10], [12]])
+        p2 = np.array([[2], [0.5]])
+        p3 = np.array([[10.69], [12.21]])
+        p4 = np.array([[10], [9.5]])
         dt = 0.01
         time = 10
         reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 #            dr.recordPosition(result.item(0), result.item(1), result.item(2))
 
             myRobot.val.setSteeringAngleTarget(wheel_angle)
-            myRobot.appendNewVelocityTrajectory((velocity, velocity))
+            myRobot.appendNewVelocityTrajectory((vr, vl))
             myRobot.executeTrajectory()
 
             vl, vr = myRobot.val.getMotorVelocities()
