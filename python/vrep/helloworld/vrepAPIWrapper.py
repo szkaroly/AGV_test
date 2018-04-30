@@ -112,16 +112,14 @@ class vrepCommunicationAPI(object):
         self.__setJointVeloStream(self.rightMotor, v_r)
 
     def getSteeringAngle(self):
-        return_code, steering_angle = self.__getJointPositionBuffer(self.steeringMotor)
-        self.handleReturnValue(return_code)
+        steering_angle = self.__getJointPositionBuffer(self.steeringMotor)
         return steering_angle
 
     def setSteeringAngleTarget(self, targetAngle):
         self.__setJointTargetPositionStream(self.steeringMotor, targetAngle)
 
     def getForkPosition(self):
-        return_code, fork_position = self.__getJointPositionBuffer(self.forkMotor)
-        self.handleReturnValue(return_code)
+        fork_position = self.__getJointPositionBuffer(self.forkMotor)
         return fork_position
 
     def setForkMotorPositionTarget(self, targetPosition):
