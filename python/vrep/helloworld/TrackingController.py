@@ -78,11 +78,11 @@ class TrackingController():
             velocity = RefVelocity;
         else: #the actual feedback control
             velocity = (RefVelocity-self.k1*abs(RefVelocity)*(erx+ery*cos(orib)))/cos(orib)
-            angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
-            wheelAngle=atan2(angularVelocity*self.kinematics.l,velocity);
-            #self.logger.info("Calculated velocity: {0}|{1}".format(velocity,angularVelocity))
-            return [velocity,wheelAngle]
-            #TODO
+        angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
+        wheelAngle=atan2(angularVelocity*self.kinematics.l,velocity);
+
+        return [velocity,wheelAngle]
+        #TODO
             #vr,vl=  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
             #return vr,vll
 
@@ -103,7 +103,6 @@ if __name__ == "__main__":
             logging.basicConfig(format=FORMAT)
             mylogger.setLevel('DEBUG')
             dr = dataRecorder()
-
             tc = TrackingController()
 
             #Create reference trajectory & input velocity
@@ -111,11 +110,11 @@ if __name__ == "__main__":
             p2 = np.array([[1], [0]])
             p3 = np.array([[1], [1]])
             p4 = np.array([[1], [2]])
-            dt = 0.5
+            dt = 0.01
             time = 20
             reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
             reference_input = generateReferenceInput(reference_trajectory, dt)
-            InitialPosition = p1
+            InitialPosition = np.array([[-0.1],[0.25]])
             InitialHeading = p2
             InitialOrientation = atan2(InitialHeading[1]-InitialPosition[1],InitialHeading[0]-InitialPosition[0])
             OldX = np.vstack([InitialPosition, InitialOrientation])
