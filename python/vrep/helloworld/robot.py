@@ -1,5 +1,8 @@
 from vrepAPIWrapper import vrepCommunicationAPI
 from BezierUtils import generateBezier, generateReferenceInput
+from TrackingController import TrackingController
+from diffDriveKinematics import DiffDriveKinematics
+
 from abc import ABCMeta, abstractmethod
 
 import time
@@ -24,7 +27,7 @@ class velocityContainer(object):
     def appendNewVelocityTrajectory(self, inputTrajectory):
         self.vr.append(inputTrajectory[0])
         self.vl.append(inputTrajectory[1])
-        
+
 class robot(object):
     def __init__(self):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
@@ -43,21 +46,52 @@ class robot(object):
     def executeTrajectory(self):
         vr, vl = self.vc.getNextVelocities()
         self.val.setMotorVelocities(vr, vl)
-        self.logger.debug("Sending velocities: %s | %s", vr, vl)
+        #self.logger.debug("Sending velocities: %s | %s", vr, vl)
         self.val.triggerStep()
 
 
 if __name__ == "__main__":
     import math
-
+    from math import cos, sin, atan2, tan
+    from dataRercorder import dataRecorder
+    import numpy as np
     try:
         myRobot = robot()
-        count = 0
-        while True:
-            a = math.sin(count * 0.0174532925)
-            count = count + 1
-            myRobot.appendNewVelocityTrajectory((a, a * 1.2))
+        tc = TrackingController()
+        dr = dataRecorder()
+        #Create reference trajectory & input velocity
+        p1 = np.array([[0], [0]])
+        p2 = np.array([[1], [0]])
+        p3 = np.array([[10], [10]])
+        p4 = np.array([[10], [1.2]])
+        dt = 0.01
+        time = 10
+        reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
+        reference_input = generateReferenceInput(reference_trajectory, dt)
+        InitialPosition = np.array([[0],[0.1]])
+        InitialHeading = p2
+        InitialOrientation = atan2(InitialHeading[1]-InitialPosition[1],InitialHeading[0]-InitialPosition[0])
+        OldX = np.vstack([InitialPosition, InitialOrientation])
+        for ii in range((int) (time/dt)):
+            RefVelocity = reference_input[0,ii]
+            RefAngularVelocity = reference_input[1,ii]
+            velocity, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
+            result = tc.kinematics.integratePosition(OldX, dt, velocity, wheel_angle)
+            #TODO Hook it back with received velocities from sim
+
+            #Store new values for next cycle
+            OldX[0] = result.item(0)
+            OldX[1] = result.item(1)
+            OldX[2] = result.item(2)
+            dr.recordPosition(result.item(0), result.item(1), result.item(2))
+            dr.recordVelocity(velocity,wheel_angle, vr, vl)
+
+            myRobot.val.setSteeringAngleTarget(wheel_angle)
+            myRobot.appendNewVelocityTrajectory((vr, vl))
             myRobot.executeTrajectory()
+
+            vl, vr = myRobot.val.getMotorVelocities()
+
     except KeyboardInterrupt:
         print("KeyboardInterrupt received!")
         myRobot.val.closeConnection()
@@ -65,4 +99,3 @@ if __name__ == "__main__":
         print(e)
     finally:
         pass
-

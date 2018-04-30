@@ -2,6 +2,7 @@ import numpy as np
 from BezierUtils import *
 from math import cos, sin, atan2, tan
 from dataRercorder import dataRecorder
+from diffDriveKinematics import DiffDriveKinematics
 
 import time
 import logging
@@ -9,37 +10,10 @@ import logging
 
 pi = 3.14
 
-class DiffDriveKinematics():
-    def __init__(self, d = 0.15 , l = 0.1 ):
-        self.d = d
-        self.l = l
-        self.name = 'Diff Drive Kinematics'
 
-    def transformVelocityToWheel(self, linearVel, angularVel):
-        vl = (linearVel - angularVel * self.d) / self.l
-        vr = (linearVel + angularVel *self.d) / self.l
-        return [vr, vl]
-
-
-
-    def TargoncaKinematics(self, dt, XVec, LinearVelocity, wheelAngle):
-        x = XVec[0]
-        y = XVec[1]
-        theta = XVec[2]
-
-        dx = cos(theta)* LinearVelocity * dt
-        dy = sin(theta)*LinearVelocity * dt
-        dtheta = tan(wheelAngle)*LinearVelocity * dt / self.l
-        result = np.vstack([dx, dy, dtheta])
-        return result
-
-    def integratePosition(self, oldPos, time, linVel, wheelAngle):
-        posDiff = self.TargoncaKinematics(time, oldPos, linVel, wheelAngle)
-        result = (oldPos+posDiff)
-        return result
 
 class TrackingController():
-    def __init__(self, kinematics = DiffDriveKinematics()):
+    def __init__(self, kinematics = DiffDriveKinematics(), maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger('trackingCtrl')
@@ -47,17 +21,18 @@ class TrackingController():
         self.logger.debug("Initializing TrackingController with Kinematics: {0}!".format(kinematics.name))
 
         #Feedback gains
-        self.k1 = 0.5
-        self.k2 = 0.5
-        self.k3 = 1
-        self.MaxVelocity = np.matrix([1.5])
+        self.k1 = k1
+        self.k2 = k2
+        self.k3 = k3
+
+        self.MaxVelocity = np.matrix([maxVel])
         self.kinematics = kinematics
 
     def calculateTrackingControl(self, OldX, RefVelocity, RefAngularVelocity, ReferenceTrajectory):
         '''
-        OldX - [X,Y,Theta] 3x1 matrix
-        RefVelocity [v] - 1x1 matrix
-        RefAngularVelocity [w] - 1x1 matrix
+        OldX - [X,Y,Theta] 3x1 matrix containing the previous position
+        RefVelocity [v] - 1x1 matrix containing the expected velocity for the given iteration
+        RefAngularVelocity [w] - 1x1 matrix containing the expected angular velocity for the given iteration
         ReferenceTrajectory - 3x1 matrix containing the x,y,theta for the given iteration
         '''
 
@@ -90,9 +65,9 @@ class TrackingController():
 
 if __name__ == "__main__":
     import unittest
-    import matplotlib.pyplot as plt
     class testTrackingController():
-        # This checks a simple bezier spline start/end position & orientation
+
+        # Simple test case for checking the output of controller
         def testCalculateTrackingControl():
             #Create logger
             mylogger = logging.getLogger('test')
@@ -131,5 +106,5 @@ if __name__ == "__main__":
                 dr.recordVelocity(velocity,wheel_angle, vr, vl)
             dr.save()
 
-tc = testTrackingController
-tc.testCalculateTrackingControl()
+    tc = testTrackingController
+    tc.testCalculateTrackingControl()
