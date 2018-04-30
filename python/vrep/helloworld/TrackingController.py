@@ -10,7 +10,7 @@ import logging
 pi = 3.14
 
 class DiffDriveKinematics():
-    def __init__(self, d = 0.15 , l = 0.15 ):
+    def __init__(self, d = 0.15 , l = 0.1 ):
         self.d = d
         self.l = l
         self.name = 'Diff Drive Kinematics'
@@ -19,6 +19,24 @@ class DiffDriveKinematics():
         vl = (linearVel - angularVel * self.d) / self.l
         vr = (linearVel + angularVel *self.d) / self.l
         return [vr, vl]
+
+
+
+    def TargoncaKinematics(self, dt, XVec, LinearVelocity, wheelAngle):
+        x = XVec[0]
+        y = XVec[1]
+        theta = XVec[2]
+
+        dx = cos(theta)* LinearVelocity * dt
+        dy = sin(theta)*LinearVelocity * dt
+        dtheta = tan(wheelAngle)*LinearVelocity * dt / self.l
+        result = np.vstack([dx, dy, dtheta])
+        return result
+
+    def integratePosition(self, oldPos, time, linVel, wheelAngle):
+        posDiff = self.TargoncaKinematics(time, oldPos, linVel, wheelAngle)
+        result = (oldPos+posDiff)
+        return result
 
 class TrackingController():
     def __init__(self, kinematics = DiffDriveKinematics()):
@@ -69,24 +87,7 @@ class TrackingController():
             #return vr,vll
 
 
-def TargoncaKinematics(t, XVec, L, LinearVelocity, wheelAngle):
-    x = XVec[0]
-    y = XVec[1]
-    theta = XVec[2]
 
-    dx = cos(theta)* LinearVelocity * t
-    dy = sin(theta)*LinearVelocity * t
-    dtheta = tan(wheelAngle)*LinearVelocity * t / L
-    result = np.vstack([dx, dy, dtheta])
-    return result
-
-
-def integratePosition(oldPos, time, linVel, wheelAngle):
-    posDiff = TargoncaKinematics(time, oldPos, 0.15 , linVel, wheelAngle)
-    #print("INTEGRAL RESULT: \n" , oldPos+posDiff)
-    result = (oldPos+posDiff)
-    #print(result)
-    return result
 
 
 
@@ -122,12 +123,14 @@ if __name__ == "__main__":
                 RefVelocity = reference_input[0,ii]
                 RefAngularVelocity = reference_input[1,ii]
                 velocity, wheel_angle = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
-                result = integratePosition(OldX, dt, velocity, wheel_angle)
+                result = tc.kinematics.integratePosition(OldX, dt, velocity, wheel_angle)
+
+                #Store new values for next cycle
                 OldX[0] = result.item(0)
                 OldX[1] = result.item(1)
                 OldX[2] = result.item(2)
                 dr.recordPosition(result.item(0), result.item(1), result.item(2))
-                #mylogger.info("RefVel:{0} || RefAngV:{1}".format(velocity, wheel_angle))
+                dr.recordVelocity(velocity.item(0),wheel_angle)
             dr.save()
 
 tc = testTrackingController
