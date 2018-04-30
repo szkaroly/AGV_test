@@ -8,7 +8,7 @@ class dataRecorder(object):
     def __init__(self):
         self.pos = {'index': [], 'x' : [], 'y': [], 'th':[]}
         self.posIndex = 0
-        self.vel = {'index': [], 'v' : [], 'w':[]}
+        self.vel = {'index': [], 'v' : [], 'w':[], 'vr' :[], 'vl':[]}
         self.velIndex = 0
 
     def recordPosition(self, x, y,th):
@@ -19,11 +19,13 @@ class dataRecorder(object):
         self.pos['y'].append(y)
         self.pos['th'].append(th)
 
-    def recordVelocity(self, v, w):
+    def recordVelocity(self, v, w, vr, vl):
         self.velIndex = self.velIndex +1
         self.vel['index'].append(self.velIndex)
         self.vel['v'].append(v)
         self.vel['w'].append(w)
+        self.vel['vr'].append(vr)
+        self.vel['vl'].append(vl)
 
     def save(self):
         df = pd.DataFrame(self.pos)

@@ -50,6 +50,7 @@ class TrackingController():
         self.k1 = 0.5
         self.k2 = 0.5
         self.k3 = 1
+        self.MaxVelocity = np.matrix([1.5])
         self.kinematics = kinematics
 
     def calculateTrackingControl(self, OldX, RefVelocity, RefAngularVelocity, ReferenceTrajectory):
@@ -74,22 +75,18 @@ class TrackingController():
         ery = eref[1]; #e,y reference
         orib = np.mod(np.mod(phik,2*pi)-np.mod(phir,2*pi),2*pi); #orientation error, reference
 
-        if (self.k1==0): #for testing if the reference velocities are correct
+        if (self.k1==0): #for testing if the reference velocities are correct #TODO Remove this..
             velocity = RefVelocity;
         else: #the actual feedback control
             velocity = (RefVelocity-self.k1*abs(RefVelocity)*(erx+ery*cos(orib)))/cos(orib)
+        if velocity > self.MaxVelocity: #saturaton on the linear velocity
+            velocity = self.MaxVelocity
+
+        print(type(velocity))
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
         wheelAngle=atan2(angularVelocity*self.kinematics.l,velocity);
-
-        return [velocity,wheelAngle]
-        #TODO
-            #vr,vl=  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
-            #return vr,vll
-
-
-
-
-
+        vr,vl=  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
+        return [velocity.item(0), wheelAngle, vr.item(0), vl.item(0)]
 
 if __name__ == "__main__":
     import unittest
@@ -114,14 +111,16 @@ if __name__ == "__main__":
             time = 20
             reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
             reference_input = generateReferenceInput(reference_trajectory, dt)
-            InitialPosition = np.array([[-0.1],[0.25]])
+            InitialPosition = np.array([[0],[0.1]])
             InitialHeading = p2
             InitialOrientation = atan2(InitialHeading[1]-InitialPosition[1],InitialHeading[0]-InitialPosition[0])
             OldX = np.vstack([InitialPosition, InitialOrientation])
             for ii in range((int) (time/dt)):
                 RefVelocity = reference_input[0,ii]
                 RefAngularVelocity = reference_input[1,ii]
-                velocity, wheel_angle = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
+                velocity, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
+
+
                 result = tc.kinematics.integratePosition(OldX, dt, velocity, wheel_angle)
 
                 #Store new values for next cycle
@@ -129,7 +128,7 @@ if __name__ == "__main__":
                 OldX[1] = result.item(1)
                 OldX[2] = result.item(2)
                 dr.recordPosition(result.item(0), result.item(1), result.item(2))
-                dr.recordVelocity(velocity.item(0),wheel_angle)
+                dr.recordVelocity(velocity,wheel_angle, vr, vl)
             dr.save()
 
 tc = testTrackingController
