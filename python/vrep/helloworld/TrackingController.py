@@ -56,8 +56,6 @@ class TrackingController():
             velocity = (RefVelocity-self.k1*abs(RefVelocity)*(erx+ery*cos(orib)))/cos(orib)
         if velocity > self.MaxVelocity: #saturaton on the linear velocity
             velocity = self.MaxVelocity
-
-        print(type(velocity))
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
         wheelAngle=atan2(angularVelocity*self.kinematics.l,velocity);
         vr,vl=  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
