@@ -59,11 +59,12 @@ if __name__ == "__main__":
         myRobot = robot()
         tc = TrackingController()
         dr = dataRecorder()
+        dr_sim = dataRecorder()
         #Create reference trajectory & input velocity
         p1 = np.array([[0], [0]])
         p2 = np.array([[1], [0]])
         p3 = np.array([[10], [10]])
-        p4 = np.array([[10], [1.2]])
+        p4 = np.array([[10], [12]])
         dt = 0.01
         time = 10
         reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
@@ -83,19 +84,25 @@ if __name__ == "__main__":
             OldX[0] = result.item(0)
             OldX[1] = result.item(1)
             OldX[2] = result.item(2)
-            dr.recordPosition(result.item(0), result.item(1), result.item(2))
-            dr.recordVelocity(velocity,wheel_angle, vr, vl)
+#            dr.recordPosition(result.item(0), result.item(1), result.item(2))
 
             myRobot.val.setSteeringAngleTarget(wheel_angle)
-            myRobot.appendNewVelocityTrajectory((vr, vl))
+            myRobot.appendNewVelocityTrajectory((velocity, velocity))
             myRobot.executeTrajectory()
 
             vl, vr = myRobot.val.getMotorVelocities()
+            ang = myRobot.val.getSteeringAngle()
+            dr_sim.recordSimData(velocity, wheel_angle, ang, vr, vl)
+
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt received!")
         myRobot.val.closeConnection()
+        dr_sim.save()
+
     except Exception as e:
         print(e)
     finally:
         pass
+    myRobot.val.closeConnection()
+    dr_sim.save()
