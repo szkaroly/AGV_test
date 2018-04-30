@@ -27,7 +27,6 @@ class dataRecorder(object):
 
     def save(self):
         df = pd.DataFrame(self.pos)
-        print(df)
         df.to_csv('pos.csv')
         dfv = pd.DataFrame(self.vel)
         dfv.to_csv('vel.csv')

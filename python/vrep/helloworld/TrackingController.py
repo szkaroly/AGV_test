@@ -107,9 +107,9 @@ if __name__ == "__main__":
 
             #Create reference trajectory & input velocity
             p1 = np.array([[0], [0]])
-            p2 = np.array([[1], [0]])
-            p3 = np.array([[1], [1]])
-            p4 = np.array([[1], [2]])
+            p2 = np.array([[10], [0]])
+            p3 = np.array([[10], [10]])
+            p4 = np.array([[10], [12]])
             dt = 0.01
             time = 20
             reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
