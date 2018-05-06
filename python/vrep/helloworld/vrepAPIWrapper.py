@@ -46,6 +46,7 @@ class vrepCommunicationAPI(object):
             self.getObjectHandles()
         else:
             self.logger.error("Connection failed to VREP!")
+            raise Exception("Connection Failed!")
 
     def closeConnection(self):
         vrep.simxStopSimulation(self.clientID, vrep.simx_opmode_oneshot_wait)
@@ -111,16 +112,14 @@ class vrepCommunicationAPI(object):
         self.__setJointVeloStream(self.rightMotor, v_r)
 
     def getSteeringAngle(self):
-        return_code, steering_angle = self.__getJointPositionBuffer(self.steeringMotor)
-        self.handleReturnValue(return_code)
+        steering_angle = self.__getJointPositionBuffer(self.steeringMotor)
         return steering_angle
 
     def setSteeringAngleTarget(self, targetAngle):
         self.__setJointTargetPositionStream(self.steeringMotor, targetAngle)
 
     def getForkPosition(self):
-        return_code, fork_position = self.__getJointPositionBuffer(self.forkMotor)
-        self.handleReturnValue(return_code)
+        fork_position = self.__getJointPositionBuffer(self.forkMotor)
         return fork_position
 
     def setForkMotorPositionTarget(self, targetPosition):
