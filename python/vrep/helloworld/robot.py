@@ -61,16 +61,16 @@ if __name__ == "__main__":
         dr = dataRecorder()
         dr_sim = dataRecorder()
         #Create reference trajectory & input velocity
-        p1 = np.array([[0], [0]])
-        p2 = np.array([[2], [0.5]])
-        p3 = np.array([[10.69], [12.21]])
-        p4 = np.array([[10], [9.5]])
+        initial_pos = np.array([[0], [0]])
+        initial_tangent = np.array([[10], [0]])
+        final_position = np.array([[10], [10]])
+        final_tangent = np.array([[10], [5]])
         dt = 0.01
         time = 10
-        reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
+        reference_trajectory = generateBezier(initial_pos, initial_tangent, final_tangent, final_position, dt, time)
         reference_input = generateReferenceInput(reference_trajectory, dt)
         InitialPosition = np.array([[0],[0.1]])
-        InitialHeading = p2
+        InitialHeading = initial_tangent
         InitialOrientation = atan2(InitialHeading[1]-InitialPosition[1],InitialHeading[0]-InitialPosition[0])
         OldX = np.vstack([InitialPosition, InitialOrientation])
         for ii in range((int) (time/dt)):
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 #            dr.recordPosition(result.item(0), result.item(1), result.item(2))
 
             myRobot.val.setSteeringAngleTarget(wheel_angle)
-            myRobot.appendNewVelocityTrajectory((vr, vl))
+            myRobot.appendNewVelocityTrajectory((velocity, velocity))
             myRobot.executeTrajectory()
 
             vl, vr = myRobot.val.getMotorVelocities()
