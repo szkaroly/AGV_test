@@ -3,8 +3,7 @@ import numpy as np
 
 import time
 
-
-class dataRecorder(object):
+class DataRecorder(object):
     def __init__(self):
         self.pos = {'index': [], 'x' : [], 'y': [], 'th':[]}
         self.posIndex = 0

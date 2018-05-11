@@ -1,7 +1,5 @@
 from vrepAPIWrapper import vrepCommunicationAPI
-from BezierUtils import generateBezier, generateReferenceInput
-from TrackingController import TrackingController
-from diffDriveKinematics import DiffDriveKinematics
+from ginop_control import DiffDriveKinematics, TrackingController, generateReferenceInput, generateBezier
 
 from abc import ABCMeta, abstractmethod
 
@@ -53,7 +51,7 @@ class robot(object):
 if __name__ == "__main__":
     import math
     from math import cos, sin, atan2, tan
-    from dataRercorder import dataRecorder
+    from ginop_control import DataRecorder
     import numpy as np
     try:
         myRobot = robot()

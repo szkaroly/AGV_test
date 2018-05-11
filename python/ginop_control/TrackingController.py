@@ -1,16 +1,15 @@
 import numpy as np
-from BezierUtils import *
-from math import cos, sin, atan2, tan
-from dataRercorder import dataRecorder
-from diffDriveKinematics import DiffDriveKinematics
-
 import time
 import logging
+from math import cos, sin, atan2, tan
+
+from .BezierUtils import *
+from .DataRecorder import DataRecorder
+from .DiffDriveKinematics import DiffDriveKinematics
+
 
 
 pi = 3.14
-
-
 
 class TrackingController():
     def __init__(self, kinematics = DiffDriveKinematics(), maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1):
