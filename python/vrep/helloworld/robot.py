@@ -56,8 +56,8 @@ if __name__ == "__main__":
     try:
         myRobot = robot()
         tc = TrackingController(maxVel =5)
-        dr = dataRecorder()
-        dr_sim = dataRecorder()
+        dr = DataRecorder()
+        dr_sim = DataRecorder()
         #Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
         initial_tangent = np.array([[10], [0]])
@@ -75,13 +75,11 @@ if __name__ == "__main__":
             RefVelocity = reference_input[0,ii]
             RefAngularVelocity = reference_input[1,ii]
             velocity, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
-            result = tc.kinematics.integratePosition(OldX, dt, velocity, wheel_angle)
+
             #TODO Hook it back with received velocities from sim
 
             #Store new values for next cycle
-            OldX[0] = result.item(0)
-            OldX[1] = result.item(1)
-            OldX[2] = result.item(2)
+
 #            dr.recordPosition(result.item(0), result.item(1), result.item(2))
 
             myRobot.val.setSteeringAngleTarget(wheel_angle)
@@ -91,7 +89,11 @@ if __name__ == "__main__":
             vl, vr = myRobot.val.getMotorVelocities()
             ang = myRobot.val.getSteeringAngle()
             dr_sim.recordSimData(velocity, wheel_angle, ang, vr, vl)
-
+            [velocity, angular_velocity] = tc.kinematics.transformWheelVelocityToRobot(vr,vl)
+            result = tc.kinematics.integratePosition(OldX, dt, velocity, ang)
+            OldX[0] = result.item(0)
+            OldX[1] = result.item(1)
+            OldX[2] = result.item(2)
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt received!")
