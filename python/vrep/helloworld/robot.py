@@ -76,12 +76,6 @@ if __name__ == "__main__":
             RefAngularVelocity = reference_input[1,ii]
             velocity, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
 
-            #TODO Hook it back with received velocities from sim
-
-            #Store new values for next cycle
-
-#            dr.recordPosition(result.item(0), result.item(1), result.item(2))
-
             myRobot.val.setSteeringAngleTarget(wheel_angle)
             myRobot.appendNewVelocityTrajectory((velocity, velocity))
             myRobot.executeTrajectory()
@@ -91,6 +85,7 @@ if __name__ == "__main__":
             dr_sim.recordSimData(velocity, wheel_angle, ang, vr, vl)
             [velocity, angular_velocity] = tc.kinematics.transformWheelVelocityToRobot(vr,vl)
             result = tc.kinematics.integratePosition(OldX, dt, velocity, ang)
+            dr_sim.recordPosition(result.item(0), result.item(1), result.item(2))
             OldX[0] = result.item(0)
             OldX[1] = result.item(1)
             OldX[2] = result.item(2)
@@ -99,6 +94,7 @@ if __name__ == "__main__":
         print("KeyboardInterrupt received!")
         myRobot.val.closeConnection()
         dr_sim.save()
+        dr.save()
 
     except Exception as e:
         print(e)
