@@ -48,16 +48,14 @@ class TrackingController():
         ery = eref[1]; #e,y reference
         orib = np.mod(np.mod(phik,2*pi)-np.mod(phir,2*pi),2*pi); #orientation error, reference
 
-        if (self.k1==0): #for testing if the reference velocities are correct #TODO Remove this..
-            velocity = RefVelocity;
-        else: #the actual feedback control
-            velocity = (RefVelocity-self.k1*abs(RefVelocity)*(erx+ery*cos(orib)))/cos(orib)
+
+        #Calculate actual velocities & angles
+        velocity = (RefVelocity-self.k1*abs(RefVelocity)*(erx+ery*cos(orib)))/cos(orib)
         if velocity > self.MaxVelocity: #saturaton on the linear velocity
             velocity = self.MaxVelocity
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
         wheelAngle=atan2(angularVelocity*self.kinematics.l,velocity);
-        vr,vl=  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
-        self.logger.debug("VelCmd:[{0}|{1}]".format(velocity, angularVelocity))
+        vr , vl =  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
         command = DiffDriveTrajectoryCommand(velocity, angularVelocity, wheelAngle, vr, vl)
         return command
 
@@ -92,14 +90,14 @@ if __name__ == "__main__":
             for ii in range((int) (time/dt)):
                 RefVelocity = reference_input[0,ii]
                 RefAngularVelocity = reference_input[1,ii]
-                velocity, angularVelocityCmd, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
-                result = tc.kinematics.integratePosition(OldX, dt, velocity, wheel_angle)
+                command = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
+                result = tc.kinematics.integratePosition(OldX, dt, command.linearVelocity, command.steeringAngle)
                 #Store new values for next cycle
                 OldX[0] = result.item(0)
                 OldX[1] = result.item(1)
                 OldX[2] = result.item(2)
                 dr.recordPosition(result.item(0), result.item(1), result.item(2))
-                dr.recordVelocity(velocity,wheel_angle, vr, vl)
+                dr.recordVelocity(command.linearVelocity, command.steeringAngle, command.vr, command.vl)
             dr.save()
 
     tc = testTrackingController

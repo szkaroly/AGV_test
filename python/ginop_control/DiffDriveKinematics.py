@@ -2,25 +2,22 @@ from math import cos, sin, tan
 import numpy as np
 
 class DiffDriveKinematics():
-    def __init__(self, d = 0.45 , l = 2, axisDistance = 0.25):
-        self.d = d
-        self.l = l
-        self.axisDistance = axisDistance
+    def __init__(self, wheelRadius = 0.45 , l = 1, axisDistance = 0.25):
+        self.wheelRadius = wheelRadius # wheel radius of the driven wheels
+        self.l = l # distance between fron & rear wheels
+        self.axisDistance = axisDistance # distancbe between the two driven wheels
         self.name = 'Diff Drive Kinematics'
-        self.jacobian = np.matrix([[self.d/2, self.d/2], [0, 0], [ self.d/self.l, -self.d/self.l]]) #2x3
+        #self.jacobian = np.matrix([[self.wheelRadius/2, self.wheelRadius/2], [0, 0], [ self.wheelRadius/self.l, -self.wheelRadius/self.l]]) #2x3
 
     def transformVelocityToWheel(self, linearVel, angularVel):
-        vl = (linearVel - angularVel * self.d) / self.l
-        vr = (linearVel + angularVel * self.d) / self.l
+        vl = (linearVel - angularVel * self.wheelRadius) / self.axisDistance
+        vr = (linearVel + angularVel * self.wheelRadius) / self.axisDistance
         return [vr, vl]
 
     def transformWheelVelocityToRobot(self, vl, vr):
-        q = np.matrix([[vr], [vl]])#  % 2x1
-        vel_W = self.jacobian*q    #  % 3x1
-        vx = vel_W[0]
-        vy = vel_W[1] # This must be always zero for diff drive
-        omega = vel_W[2]
-        return [np.asscalar(vx), np.asscalar(omega)]
+        v = (self.wheelRadius / 2) * (vr+vl)
+        omega = (self.wheelRadius/self.axisDistance) * (vl-vr)
+        return v, omega
 
 
     def calculateDistanceTraveled(self, dt, Position, LinearVelocity, wheelAngle):
