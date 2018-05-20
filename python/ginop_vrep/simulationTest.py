@@ -105,7 +105,7 @@ from bokeh.io import show, output_notebook, push_notebook, output_file
 from bokeh.plotting import figure
 from bokeh.layouts import column
 
-figw = 900
+figw = 1250
 
 df = pd.read_csv('simvel.csv')
 df.columns
@@ -126,11 +126,9 @@ fig2.legend.click_policy = 'hide'
 output_file('vel.html')
 show(column(fig1, fig2))
 
-df.columns
 figSteer = figure()
 figSteer.line(df.index, df.commandedWheelAngle, color = 'blue' , legend = 'wheelAngCmd')
 figSteer.line(df.index, df.wheelAngleSim, color = 'red' , legend = 'wheelAngleSim')
-
 output_file('steering.html')
 show(figSteer)
 

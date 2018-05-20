@@ -16,7 +16,7 @@ class DiffDriveKinematics():
 
     def transformWheelVelocityToRobot(self, vl, vr):
         v = (self.wheelRadius / 2) * (vr+vl)
-        omega = (self.wheelRadius/self.axisDistance) * (vl-vr)
+        omega = (self.wheelRadius/self.axisDistance) * (vr-vl)
         return v, omega
 
 
