@@ -54,7 +54,7 @@ class DiffDriveKinematics():
         x = x + (linearVelocity * elapsedTime * sin(theta) )
         y = y + (linearVelocity * elapsedTime * cos(theta) )
         theta = theta + ( angularVelocity * elapsedTime )
-        return [x,y,theta]
+        return [np.asscalar(x),np.asscalar(y),np.asscalar(theta)]
 
 
 class DiffDriveTrajectoryCommand:
