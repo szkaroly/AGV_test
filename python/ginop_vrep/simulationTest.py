@@ -20,15 +20,15 @@ class SimulationApp:
         self.logger.debug("Application has started!")
 
         self.myRobot = robot()
-        self.tc = TrackingController(maxVel=5, kinematics=DiffDriveKinematics(wheelRadius=0.230, l= 0.5, axisDistance=0.275*2))
+        self.tc = TrackingController(maxVel=25, kinematics=DiffDriveKinematics(wheelRadius=0.230/2, l= 0.5, axisDistance=0.275*2))
         self.dr = DataRecorder(tag='norm')
         self.dr_sim = DataRecorder(tag='sim')
         # Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
         initial_tangent = np.array([[1], [0]])
-        final_position = np.array([[5], [-5]])
-        final_tangent = np.array([[5], [0]])
-        self.dt = 0.05
+        final_position = np.array([[10], [10]])
+        final_tangent = np.array([[10], [12]])
+        self.dt = 0.1
         self.time = time
         self.reference_trajectory = generateBezier(initial_pos, initial_tangent, final_tangent, final_position, self.dt, self.time)
         self.reference_input = generateReferenceInput(self.reference_trajectory, self.dt)
@@ -58,7 +58,8 @@ class SimulationApp:
                 command = self.getNextCommand(ii)
 
                 # Push commands to VREP & iterate
-                self.myRobot.val.setSteeringAngleTarget(command.steeringAngle)
+                self.myRobot.val.setForkMotorPositionTarget(0.25)
+                #self.myRobot.val.setSteeringAngleTarget(command.steeringAngle)
                 self.myRobot.appendNewVelocityTrajectory((command.vr, command.vl))
                 self.myRobot.executeTrajectory()
 
@@ -129,8 +130,6 @@ show(column(fig1, fig2))
 figSteer = figure()
 figSteer.line(df.index, df.commandedWheelAngle, color = 'blue' , legend = 'wheelAngCmd')
 figSteer.line(df.index, df.wheelAngleSim, color = 'red' , legend = 'wheelAngleSim')
-output_file('steering.html')
-show(figSteer)
 
 df_pos = pd.read_csv('simpos.csv')
 df_pos_ref = pd.read_csv('normpos.csv')
@@ -140,5 +139,5 @@ figp = figure()
 figp.line(df_pos.x, df_pos.y, legend = 'sim')
 figp.line(df_pos_ref.x, df_pos_ref.y, color = 'red', legend = 'ref')
 figp.legend.click_policy = 'hide'
-output_file('pos.html')
-show(figp)
+output_file('pos_steer.html')
+show(column(figp,figSteer))

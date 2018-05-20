@@ -57,3 +57,5 @@ class DataRecorder(object):
         df.to_csv('{0}pos.csv'.format(self.tag))
         dfv = pd.DataFrame(self.sim)
         dfv.to_csv('{0}vel.csv'.format(self.tag))
+        dfvel = pd.DataFrame(self.vel)
+        dfvel.to_csv('{0}velOnly.csv'.format(self.tag))

@@ -7,11 +7,10 @@ class DiffDriveKinematics():
         self.l = l # distance between fron & rear wheels
         self.axisDistance = axisDistance # distancbe between the two driven wheels
         self.name = 'Diff Drive Kinematics'
-        #self.jacobian = np.matrix([[self.wheelRadius/2, self.wheelRadius/2], [0, 0], [ self.wheelRadius/self.l, -self.wheelRadius/self.l]]) #2x3
 
     def transformVelocityToWheel(self, linearVel, angularVel):
-        vl = (linearVel - angularVel * self.wheelRadius) / self.axisDistance
-        vr = (linearVel + angularVel * self.wheelRadius) / self.axisDistance
+        vl = (linearVel - angularVel * self.wheelRadius) / self.axisDistance #u1
+        vr = (linearVel + angularVel * self.wheelRadius) / self.axisDistance #u2
         return [vr, vl]
 
     def transformWheelVelocityToRobot(self, vl, vr):
