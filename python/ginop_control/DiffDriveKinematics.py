@@ -7,7 +7,7 @@ class DiffDriveKinematics():
         self.l = l
         self.axisDistance = axisDistance
         self.name = 'Diff Drive Kinematics'
-        self.jacobian = np.matrix([[self.d/2, self.d/2], [0, 0], [ self.d/self.axisDistance, -self.d/self.axisDistance]]) #2x3
+        self.jacobian = np.matrix([[self.d/2, self.d/2], [0, 0], [ self.d/self.l, -self.d/self.l]]) #2x3
 
     def transformVelocityToWheel(self, linearVel, angularVel):
         vl = (linearVel - angularVel * self.d) / self.l
