@@ -1,5 +1,5 @@
 from vrepAPIWrapper import vrepCommunicationAPI
-from ginop_control import DiffDriveKinematics, TrackingController, generateReferenceInput, generateBezier
+from ginop_control import DiffDriveKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier
 
 from abc import ABCMeta, abstractmethod
 
@@ -55,14 +55,14 @@ if __name__ == "__main__":
     import numpy as np
     try:
         myRobot = robot()
-        tc = TrackingController(maxVel =5)
-        dr = DataRecorder()
-        dr_sim = DataRecorder()
+        tc = TrackingController(maxVel = 5, kinematics = DiffDriveKinematics(d = 0.115 , l = 1.25, axisDistance = 0.25))
+        dr = DataRecorder(tag = 'norm')
+        dr_sim = DataRecorder(tag = 'sim')
         #Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
         initial_tangent = np.array([[10], [0]])
-        final_position = np.array([[10], [10]])
-        final_tangent = np.array([[10], [5]])
+        final_position = np.array([[10], [12]])
+        final_tangent = np.array([[10], [10]])
         dt = 0.01
         time = 10
         reference_trajectory = generateBezier(initial_pos, initial_tangent, final_tangent, final_position, dt, time)
@@ -72,23 +72,31 @@ if __name__ == "__main__":
         InitialOrientation = atan2(InitialHeading[1]-InitialPosition[1],InitialHeading[0]-InitialPosition[0])
         OldX = np.vstack([InitialPosition, InitialOrientation])
         for ii in range((int) (time/dt)):
+            print('{0}/{1}'.format(ii, (int) (time/dt)))
             RefVelocity = reference_input[0,ii]
             RefAngularVelocity = reference_input[1,ii]
-            velocity, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
 
-            myRobot.val.setSteeringAngleTarget(wheel_angle)
-            myRobot.appendNewVelocityTrajectory((velocity, velocity))
+
+            command = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
+
+            myRobot.val.setSteeringAngleTarget(command.steeringAngle)
+            myRobot.appendNewVelocityTrajectory((command.vr, command.vl))
             myRobot.executeTrajectory()
 
             vl, vr = myRobot.val.getMotorVelocities()
-            ang = myRobot.val.getSteeringAngle()
-            dr_sim.recordSimData(velocity, wheel_angle, ang, vr, vl)
-            [velocity, angular_velocity] = tc.kinematics.transformWheelVelocityToRobot(vr,vl)
-            result = tc.kinematics.integratePosition(OldX, dt, velocity, ang)
-            dr_sim.recordPosition(result.item(0), result.item(1), result.item(2))
-            OldX[0] = result.item(0)
-            OldX[1] = result.item(1)
-            OldX[2] = result.item(2)
+            sim_wheel_angle = myRobot.val.getSteeringAngle()
+            [velocity_sim, angular_velocity_sim] = tc.kinematics.transformWheelVelocityToRobot(vr,vl)
+            newPos = tc.kinematics.integratePosition(OldX, dt, command.linearVelocity, command.steeringAngle)
+            newOdo = tc.kinematics.calculateOdometry(OldX, dt, velocity_sim, angular_velocity_sim)
+            OldX[0] = newPos[0]
+            OldX[1] = newPos[1]
+            OldX[2] = newPos[2]
+#            dr_sim.recordPosition(newPos.item(0), newPos.item(1), newPos.item(2))
+            dr_sim.recordSimData(command.linearVelocity, command.angularVelocity, command.steeringAngle,
+                                velocity_sim, angular_velocity_sim, sim_wheel_angle,
+                                vr, vl, command.vr, command.vl)
+            dr_sim.recordPosition(newOdo[0], newOdo[1], newOdo[2])
+
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt received!")
@@ -100,5 +108,6 @@ if __name__ == "__main__":
         print(e)
     finally:
         pass
+
     myRobot.val.closeConnection()
     dr_sim.save()

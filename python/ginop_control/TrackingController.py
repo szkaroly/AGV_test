@@ -4,8 +4,7 @@ import logging
 from math import cos, sin, atan2, tan
 
 from .BezierUtils import *
-from .DataRecorder import DataRecorder
-from .DiffDriveKinematics import DiffDriveKinematics
+from .DiffDriveKinematics import DiffDriveKinematics, DiffDriveTrajectoryCommand
 
 
 
@@ -16,7 +15,7 @@ class TrackingController():
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger('trackingCtrl')
-        self.logger.setLevel('DEBUG')
+        self.logger.setLevel('INFO')
         self.logger.debug("Initializing TrackingController with Kinematics: {0}!".format(kinematics.name))
 
         #Feedback gains
@@ -58,10 +57,13 @@ class TrackingController():
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
         wheelAngle=atan2(angularVelocity*self.kinematics.l,velocity);
         vr,vl=  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
-        return [velocity.item(0), wheelAngle, vr.item(0), vl.item(0)]
+        self.logger.debug("VelCmd:[{0}|{1}]".format(velocity, angularVelocity))
+        command = DiffDriveTrajectoryCommand(velocity, angularVelocity, wheelAngle, vr, vl)
+        return command
 
 if __name__ == "__main__":
     import unittest
+    from DataRecorder import DataRecorder
     class testTrackingController():
 
         # Simple test case for checking the output of controller
@@ -71,7 +73,7 @@ if __name__ == "__main__":
             FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
             logging.basicConfig(format=FORMAT)
             mylogger.setLevel('DEBUG')
-            dr = dataRecorder()
+            dr = DataRecorder()
             tc = TrackingController()
 
             #Create reference trajectory & input velocity
@@ -90,11 +92,8 @@ if __name__ == "__main__":
             for ii in range((int) (time/dt)):
                 RefVelocity = reference_input[0,ii]
                 RefAngularVelocity = reference_input[1,ii]
-                velocity, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
-
-
+                velocity, angularVelocityCmd, wheel_angle, vr, vl = tc.calculateTrackingControl(OldX, RefVelocity, RefAngularVelocity, reference_trajectory[:,ii])
                 result = tc.kinematics.integratePosition(OldX, dt, velocity, wheel_angle)
-
                 #Store new values for next cycle
                 OldX[0] = result.item(0)
                 OldX[1] = result.item(1)
