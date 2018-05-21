@@ -53,7 +53,8 @@ class TrackingController():
             velocity = self.MaxVelocity
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
         wheelAngle = atan2(angularVelocity*self.kinematics.L,velocity);
-        return velocity.asscalar(), wheelAngle
+        #print('type of velocity {0}:{1} '.format(velocity,type(velocity)))
+        return velocity.item(0), wheelAngle
 
 if __name__ == "__main__":
     import unittest
