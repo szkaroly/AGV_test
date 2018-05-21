@@ -58,16 +58,16 @@ class vrepCommunicationAPI(object):
     def getObjectHandles(self):
         error, self.leftMotor = vrep.simxGetObjectHandle(
             self.clientID, 'leftMotor', vrep.simx_opmode_oneshot_wait)
-        self.handleReturnValue(error)
+        self.handleReturnValue(error, 'leftMotor')
         error, self.rightMotor = vrep.simxGetObjectHandle(
             self.clientID, 'rightMotor', vrep.simx_opmode_oneshot_wait)
-        self.handleReturnValue(error)
+        self.handleReturnValue(error, 'rightMotor')
         error, self.steeringMotor = vrep.simxGetObjectHandle(
             self.clientID, 'steeringMotor', vrep.simx_opmode_oneshot_wait)
-        self.handleReturnValue(error)
+        self.handleReturnValue(error, 'steeringMotor')
         error, self.forkMotor = vrep.simxGetObjectHandle(
             self.clientID, 'forkMotor', vrep.simx_opmode_oneshot_wait)
-        self.handleReturnValue(error)
+        self.handleReturnValue(error, 'forkMotor')
 
     def initializeMotors(self):
         return_code = vrep.simxSetJointTargetVelocity(
