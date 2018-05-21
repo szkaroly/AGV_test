@@ -5,8 +5,7 @@ from math import cos, sin, atan2, tan
 
 from .BezierUtils import *
 from .DiffDriveKinematics import DiffDriveKinematics, DiffDriveTrajectoryCommand
-
-
+from .UnicycleKinematics import UnicycleKinematics, UnicycleTrajectoryCommand
 
 pi = 3.14
 
@@ -33,7 +32,6 @@ class TrackingController():
         RefAngularVelocity [w] - 1x1 matrix containing the expected angular velocity for the given iteration
         ReferenceTrajectory - 3x1 matrix containing the x,y,theta for the given iteration
         '''
-
         xk = OldX[0] #x,k spatial
         yk = OldX[1] #y,k spatial
         phik = OldX[2] #phi,k spatial
@@ -54,9 +52,9 @@ class TrackingController():
         if velocity > self.MaxVelocity: #saturaton on the linear velocity
             velocity = self.MaxVelocity
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
-        wheelAngle = atan2(angularVelocity*self.kinematics.l,velocity);
-        vr , vl =  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
-        command = DiffDriveTrajectoryCommand(velocity, angularVelocity, wheelAngle, vr, vl)
+        wheelAngle = atan2(angularVelocity*self.kinematics.L,velocity);
+        wheel_vel =  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
+        command = UnicycleTrajectoryCommand(wheel_vel, wheelAngle)
         return command
 
 if __name__ == "__main__":

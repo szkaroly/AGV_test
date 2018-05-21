@@ -25,6 +25,38 @@ class velocityContainer(object):
         self.vr.append(inputTrajectory[0])
         self.vl.append(inputTrajectory[1])
 
+class AbstractRobot(object):
+    def __init__(self, TrackingController, VehicleAbstractionLayer, name = 'robot'):
+        FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
+        logging.basicConfig(format=FORMAT)
+        self.logger = logging.getLogger(name)
+        self.logger.setLevel('DEBUG')
+        self.logger.debug("Initializing {0}!".format(name))
+        self.TrackingController = TrackingController
+        self.val = VehicleAbstractionLayer
+        self.val.initialize()
+        self.velocityContainer = velocityContainer()
+        self.logger.info("{0} instance has been initialized!".format(name))
+
+
+class UnicycleRobot(object):
+    def __init__(self, wheelRadius, L, VehicleAbstractionLayer, name = 'UnicycleRobot'):
+        kinematics = UnicycleKinematics(wheelRadius, L)
+        tc = TrackingController(kinematics, maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1)
+        VehicleAbstractionLayer = vrepCommunicationAPI()
+        AbstractRobot.__init__(self,
+                            TrackingController=tc,
+                            VehicleAbstractionLayer=VehicleAbstractionLayer,
+                            name = name)
+
+    def appendNewVelocityTrajectory(self, trajectory):
+        self.vc.appendNewVelocityTrajectory(trajectory)
+
+    def executeTrajectory(self):
+        vr, vl = self.vc.getNextVelocities()
+        self.val.setMotorVelocities(vr, vl)
+        self.val.triggerStep()
+
 
 class robot(object):
     def __init__(self):
@@ -40,9 +72,3 @@ class robot(object):
 
     def appendNewVelocityTrajectory(self, trajectory):
         self.vc.appendNewVelocityTrajectory(trajectory)
-
-    def executeTrajectory(self):
-        vr, vl = self.vc.getNextVelocities()
-        self.val.setMotorVelocities(vr, vl)
-        #self.logger.debug("Sending velocities: %s | %s", vr, vl)
-        self.val.triggerStep()
