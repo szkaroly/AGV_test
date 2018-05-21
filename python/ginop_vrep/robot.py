@@ -44,8 +44,8 @@ class AbstractRobot(object):
 
 class UnicycleRobot(AbstractRobot):
     def __init__(self, wheelRadius, L, name = 'UnicycleRobot'):
-        kinematics = UnicycleKinematics(wheelRadius, L)
-        tc = TrackingController(kinematics, maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1)
+        self.kinematics = UnicycleKinematics(wheelRadius, L)
+        tc = TrackingController(self.kinematics, maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1)
         self.frontMotor = VelocityControlledJoint('frontMotor')
         self.steeringMotor = PositionControlledJoint('steeringMotor')
         joints = [self.frontMotor, self.steeringMotor]

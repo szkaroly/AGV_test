@@ -81,6 +81,10 @@ class VelocityControlledJoint(AbstractJoint):
         return_code = vrep.simxSetJointTargetVelocity(self.clientID, self.objectHandle, TargetVelocity, vrep.simx_opmode_streaming)
         self.handleReturnValue(return_code, msg = 'setting velocity for :{0}'.format(self.name))
 
+    def getJointVelocity(self):
+        return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_buffer)
+        self.handleReturnValue(return_code)
+
 class PositionControlledJoint(AbstractJoint):
     def __init__(self, name):
         AbstractJoint.__init__(self, name)

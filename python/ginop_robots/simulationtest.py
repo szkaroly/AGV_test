@@ -1,5 +1,5 @@
 from vrepAPIWrapper import vrepCommunicationAPI
-from robot import UnicycleRobot
+from robot import robot
 from ginop_control import DiffDriveKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier
 
 import time
@@ -19,7 +19,8 @@ class SimulationApp:
         self.logger.setLevel('INFO')
         self.logger.debug("Application has started!")
 
-        self.myRobot = UnicycleRobot(0.1, 0.5)
+        self.myRobot = robot()
+        self.tc = TrackingController(maxVel=5, kinematics=DiffDriveKinematics(wheelRadius=0.2, l= 0.5, axisDistance=0.275*2))
         self.dr = DataRecorder(tag='norm')
         self.dr_sim = DataRecorder(tag='sim')
         # Create reference trajectory & input velocity
@@ -40,11 +41,11 @@ class SimulationApp:
     def getNextCommand(self, index):
         RefVelocity = self.reference_input[0, index]
         RefAngularVelocity = self.reference_input[1, index]
-        v, theta = self.myRobot.TrackingController.calculateTrackingControl(self.OldX, RefVelocity, RefAngularVelocity, self.reference_trajectory[:, index])
-        return v, theta
+        command = self.tc.calculateTrackingControl(self.OldX, RefVelocity, RefAngularVelocity, self.reference_trajectory[:, index])
+        return command
 
     def exitApp(self):
-        self.myRobot.shutdown()
+        self.myRobot.val.closeConnection()
         self.dr_sim.save()
         self.dr.save()
 
@@ -54,32 +55,35 @@ class SimulationApp:
             for ii in range((int)(self.time/self.dt)):
                 print('{0}/{1}'.format(ii, (int)(self.time/self.dt)))
                 # Fetch next command set
-                v, theta = self.getNextCommand(ii)
+                command = self.getNextCommand(ii)
 
                 # Push commands to VREP & iterate
-                self.myRobot.appendNewVelocityTrajectory((v, theta))
+                self.myRobot.val.setForkMotorPositionTarget(0.25)
+                self.myRobot.val.setSteeringAngleTarget(command.steeringAngle)
+                self.myRobot.appendNewVelocityTrajectory((command.linearVelocity, command.vl))
                 self.myRobot.executeTrajectory()
 
                 # Pull new values
-                v_sim = self.myRobot.frontMotor.getJointVelocity()
-                wheel_angle_sim = self.myRobot.steeringMotor.getJointPosition()
+                vl_sim, vr_sim = self.myRobot.val.getMotorVelocities()
+                wheel_angle_sim = self.myRobot.val.getSteeringAngle()
+
+                # Calculate Robot Linear & Angular velocities from wheel
+                [velocity_sim, angular_velocity_sim] = self.tc.kinematics.transformWheelVelocityToRobot(vr_sim, vl_sim)
 
                 # Calculate new position based on the velocities
-                newPos_reference = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v, theta).flatten().tolist()
-                newPos_sim = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_sim, wheel_angle_sim).flatten().tolist()
-#                newOdo_sim = self.tc.kinematics.calculateOdometry(self.OldX, self.dt, velocity_sim, angular_velocity_sim)
+                newPos_reference = self.tc.kinematics.integratePosition(self.OldX, self.dt, command.linearVelocity, command.steeringAngle).flatten().tolist()
+                newPos_sim = self.tc.kinematics.integratePosition(self.OldX, self.dt, velocity_sim, wheel_angle_sim).flatten().tolist()
+                newOdo_sim = self.tc.kinematics.calculateOdometry(self.OldX, self.dt, velocity_sim, angular_velocity_sim)
 
                 # Save data
                 self.OldX[0] = newPos_reference[0]
                 self.OldX[1] = newPos_reference[1]
                 self.OldX[2] = newPos_reference[2]
-                '''
                 self.dr.recordPosition(newPos_reference[0], newPos_reference[1], newPos_reference[2])
                 self.dr_sim.recordSimData(command.linearVelocity, command.angularVelocity, command.steeringAngle,
                                      vl_sim, angular_velocity_sim, wheel_angle_sim,
                                      vr_sim, vl_sim, command.vr, command.vl)
                 self.dr_sim.recordPosition(newOdo_sim[0], newOdo_sim[1],newOdo_sim[2])
-                '''
 
         except KeyboardInterrupt:
             self.logger("KeyboardInterrupt received!")
@@ -136,4 +140,4 @@ figp.line(df_pos.x, df_pos.y, legend = 'sim')
 figp.line(df_pos_ref.x, df_pos_ref.y, color = 'red', legend = 'ref')
 figp.legend.click_policy = 'hide'
 output_file('pos_steer.html')
-show(column(figp,figSteer))
+show(column(figp,figSteer)) 

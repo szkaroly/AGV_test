@@ -53,9 +53,7 @@ class TrackingController():
             velocity = self.MaxVelocity
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
         wheelAngle = atan2(angularVelocity*self.kinematics.L,velocity);
-        wheel_vel =  self.kinematics.transformVelocityToWheel(velocity, angularVelocity)
-        command = UnicycleTrajectoryCommand(wheel_vel, wheelAngle)
-        return command
+        return velocity.asscalar(), wheelAngle
 
 if __name__ == "__main__":
     import unittest
