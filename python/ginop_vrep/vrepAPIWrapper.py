@@ -98,7 +98,7 @@ class PositionControlledJoint(AbstractJoint):
 
     def setJointPosition(self, TargetPosition):
         return_code = vrep.simxSetJointTargetPosition(self.clientID, self.objectHandle, TargetPosition, vrep.simx_opmode_oneshot_wait)
-        self.handleReturnValue(return_code, msg = 'setting target position for :{0}'.fomrat(self.name))
+        self.handleReturnValue(return_code, msg = 'setting target position for :{0}'.format(self.name))
 
 # This class is responsible for initiating the communication to the VREP Simulator
 class vrepCommunicationAPI(object):
@@ -148,18 +148,21 @@ class vrepCommunicationAPI(object):
 
 
 if __name__ == "__main__":
-
+    from math import sin
+    #Creating the joints...
     leftMotor = VelocityControlledJoint('leftMotor')
     rightMotor = VelocityControlledJoint('rightMotor')
     forkMotor = PositionControlledJoint('forkMotor')
     steeringMotor = PositionControlledJoint('steeringMotor')
-
+    # Putting them into a list , that is passed to the VREP instance
     joints = [leftMotor, rightMotor, forkMotor, steeringMotor]
-
+    #Initialize VREP communication
     VCA = vrepCommunicationAPI(joints)
     VCA.startConnection()
+
+    #Execute the trajectory..
     for i in range(1000):
-        leftMotor.setJointVelocity(-0.05)
+        leftMotor.setJointVelocity(sin(i/10))
         rightMotor.setJointVelocity(0)
         VCA.triggerStep()
     VCA.closeConnection()

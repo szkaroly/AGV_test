@@ -100,5 +100,3 @@ class UnicycleTrajectoryCommand:
     def __init__(self, wheelVelocity, steeringAngleTarget):
         self.linearVelocityTarget = wheelVelocity
         self.steeringAngleTarget = steeringAngleTarget
-
-uk = UnicycleKinematics()

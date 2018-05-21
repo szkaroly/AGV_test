@@ -4,8 +4,8 @@ import logging
 from math import cos, sin, atan2, tan
 
 from .BezierUtils import *
-from .DiffDriveKinematics import DiffDriveKinematics, DiffDriveTrajectoryCommand
-from .UnicycleKinematics import UnicycleKinematics, UnicycleTrajectoryCommand
+from .Kinematics import DiffDriveKinematics, DiffDriveTrajectoryCommand, UnicycleKinematics, UnicycleTrajectoryCommand
+
 
 pi = 3.14
 

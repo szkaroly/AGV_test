@@ -1,5 +1,5 @@
-from vrepAPIWrapper import vrepCommunicationAPI
-from ginop_control import DiffDriveKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier
+from ginop_vrep import vrepCommunicationAPI, PositionControlledJoint, VelocityControlledJoint
+from ginop_control import UnicycleKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier
 
 from abc import ABCMeta, abstractmethod
 
@@ -38,12 +38,19 @@ class AbstractRobot(object):
         self.velocityContainer = velocityContainer()
         self.logger.info("{0} instance has been initialized!".format(name))
 
+    def shutdown(self):
+        self.val.closeConnection()
 
-class UnicycleRobot(object):
-    def __init__(self, wheelRadius, L, VehicleAbstractionLayer, name = 'UnicycleRobot'):
+
+class UnicycleRobot(AbstractRobot):
+    def __init__(self, wheelRadius, L, name = 'UnicycleRobot'):
         kinematics = UnicycleKinematics(wheelRadius, L)
         tc = TrackingController(kinematics, maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1)
-        VehicleAbstractionLayer = vrepCommunicationAPI()
+        self.frontMotor = VelocityControlledJoint('frontMotor')
+        self.steeringMotor = PositionControlledJoint('steeringMotor')
+        joints = [self.frontMotor, self.steeringMotor]
+        VehicleAbstractionLayer = vrepCommunicationAPI(joints)
+        self.vc = velocityContainer()
         AbstractRobot.__init__(self,
                             TrackingController=tc,
                             VehicleAbstractionLayer=VehicleAbstractionLayer,
@@ -54,7 +61,8 @@ class UnicycleRobot(object):
 
     def executeTrajectory(self):
         vr, vl = self.vc.getNextVelocities()
-        self.val.setMotorVelocities(vr, vl)
+        self.frontMotor.setJointVelocity(vr)
+        self.steeringMotor.setJointPosition(vl)
         self.val.triggerStep()
 
 
@@ -72,3 +80,12 @@ class robot(object):
 
     def appendNewVelocityTrajectory(self, trajectory):
         self.vc.appendNewVelocityTrajectory(trajectory)
+
+
+if __name__ == "__main__":
+    from math import sin, cos
+    uniBot = UnicycleRobot(0.2, 1)
+    for i in range(0,1000):
+        uniBot.appendNewVelocityTrajectory((sin(i/10), cos(i/10)))
+        uniBot.executeTrajectory()
+    uniBot.shutdown()
