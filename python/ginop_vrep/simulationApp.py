@@ -8,7 +8,10 @@ import logging
 import math
 from math import cos, sin, atan2, tan
 from ginop_control import DataRecorder
+from rtplot import RealtimePlot
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 
 class SimulationApp:
@@ -19,14 +22,14 @@ class SimulationApp:
         self.logger.setLevel('INFO')
         self.logger.debug("Application has started!")
 
-        self.myRobot = UnicycleRobot(0.15 / 2, 1)
+        self.myRobot = UnicycleRobot(0.15 / 2, 0.45)
         self.dr = DataRecorder(tag='norm')
         self.dr_sim = DataRecorder(tag='sim')
         # Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
         initial_tangent = np.array([[10], [0]])
         final_position = np.array([[10], [10]])
-        final_tangent = np.array([[10], [12]])
+        final_tangent = np.array([[10], [5]])
         self.dt = 0.05
         self.time = time
         self.reference_trajectory = generateBezier(initial_pos, initial_tangent, final_tangent, final_position, self.dt, self.time)
@@ -39,9 +42,8 @@ class SimulationApp:
     def getNextCommand(self, index):
         RefVelocity = self.reference_input[0, index]
         RefAngularVelocity = self.reference_input[1, index]
-        v, theta = self.myRobot.TrackingController.calculateTrackingControl(self.OldX, RefVelocity, RefAngularVelocity, self.reference_trajectory[:, index])
-        #print(v,theta)
-        return RefVelocity, theta
+        v, wheelAngle = self.myRobot.TrackingController.calculateTrackingControl(self.OldX, RefVelocity, RefAngularVelocity, self.reference_trajectory[:, index])
+        return v, wheelAngle
 
     def exitApp(self):
         self.myRobot.shutdown()
@@ -57,15 +59,19 @@ class SimulationApp:
                 vCmd, wheelAngleCmd = self.getNextCommand(ii)
 
                 # Push commands to VREP & iterate
-                self.myRobot.appendNewVelocityTrajectory((vCmd, wheelAngleCmd))
+                #self.myRobot.appendNewVelocityTrajectory((vCmd, wheelAngleCmd))
+                self.myRobot.frontMotor.setJointVelocity(vCmd)
+                self.myRobot.steeringMotor.setJointPosition(wheelAngleCmd)
                 self.myRobot.executeTrajectory()
 
                 # Pull new values
-                v_sim = self.myRobot.frontMotor.getJointVelocity()
+                v_frontWheel = self.myRobot.frontMotor.getJointVelocity()
                 wheel_angle_sim = self.myRobot.steeringMotor.getJointPosition()
+                v_sim, nothing = self.myRobot.kinematics.transformWheelVelocityToRobot([v_frontWheel])
+
 
                 # Calculate new position based on the velocities
-                newPos_reference = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, vCmd, wheelAngleCmd).flatten().tolist()
+                newPos_reference = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_sim, wheel_angle_sim).flatten().tolist()
 
                 # Save data
                 self.OldX[0] = newPos_reference[0]
@@ -73,7 +79,7 @@ class SimulationApp:
                 self.OldX[2] = newPos_reference[2]
 
                 self.dr.recordPosition(newPos_reference[0], newPos_reference[1], newPos_reference[2])
-                '''
+                ''' Disabled logging
                 self.dr_sim.recordSimData(command.linearVelocity, command.angularVelocity, command.steeringAngle,
                                      vl_sim, angular_velocity_sim, wheel_angle_sim,
                                      vr_sim, vl_sim, command.vr, command.vl)
@@ -85,7 +91,8 @@ class SimulationApp:
             self.exitApp()
 
         except Exception as e:
-            self.logger(e)
+            self.logger(e.with_traceback)
+            self.exitApp()
         finally:
             pass
 
@@ -95,13 +102,15 @@ class SimulationApp:
 app = SimulationApp()
 app.start()
 
-
+'''
 import pandas as pd
 from bokeh.io import show, output_notebook, push_notebook, output_file
 from bokeh.plotting import figure
 from bokeh.layouts import column
 
 figw = 1250
+
+'''
 '''
 df = pd.read_csv('simvel.csv')
 df.columns
@@ -125,7 +134,7 @@ show(column(fig1, fig2))
 figSteer = figure()
 figSteer.line(df.index, df.commandedWheelAngle, color = 'blue' , legend = 'wheelAngCmd')
 figSteer.line(df.index, df.wheelAngleSim, color = 'red' , legend = 'wheelAngleSim')
-'''
+
 df_pos = pd.read_csv('simpos.csv')
 df_pos_ref = pd.read_csv('normpos.csv')
 df_pos.columns
@@ -136,3 +145,4 @@ figp.line(df_pos_ref.x, df_pos_ref.y, color = 'red', legend = 'ref')
 figp.legend.click_policy = 'hide'
 output_file('pos_steer.html')
 show(figp)
+'''

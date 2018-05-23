@@ -26,20 +26,20 @@ class velocityContainer(object):
         self.vl.append(inputTrajectory[1])
 
 class AbstractRobot(object):
-    def __init__(self, TrackingController, VehicleAbstractionLayer, name = 'robot'):
+    def __init__(self, TrackingController, HardwareAbstractionLayer, name = 'robot'):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger(name)
         self.logger.setLevel('DEBUG')
         self.logger.debug("Initializing {0}!".format(name))
         self.TrackingController = TrackingController
-        self.val = VehicleAbstractionLayer
-        self.val.initialize()
+        self.hal = HardwareAbstractionLayer
+        self.hal.initialize()
         self.velocityContainer = velocityContainer()
         self.logger.info("{0} instance has been initialized!".format(name))
 
     def shutdown(self):
-        self.val.closeConnection()
+        self.hal.closeConnection()
 
 
 class UnicycleRobot(AbstractRobot):
@@ -49,21 +49,22 @@ class UnicycleRobot(AbstractRobot):
         self.frontMotor = VelocityControlledJoint('frontMotor')
         self.steeringMotor = PositionControlledJoint('steeringMotor')
         joints = [self.frontMotor, self.steeringMotor]
-        VehicleAbstractionLayer = vrepCommunicationAPI(joints)
+        HardwareAbstractionLayer = vrepCommunicationAPI(joints)
         self.vc = velocityContainer()
         AbstractRobot.__init__(self,
                             TrackingController=tc,
-                            VehicleAbstractionLayer=VehicleAbstractionLayer,
+                            HardwareAbstractionLayer=HardwareAbstractionLayer,
                             name = name)
 
     def appendNewVelocityTrajectory(self, trajectory):
         self.vc.appendNewVelocityTrajectory(trajectory)
 
     def executeTrajectory(self):
-        vr, vl = self.vc.getNextVelocities()
-        self.frontMotor.setJointVelocity(vr)
-        self.steeringMotor.setJointPosition(vl)
-        self.val.triggerStep()
+        #TODO clean it up... as there is no vr,vl only v, and wheelAngleTarget
+        #vr, vl = self.vc.getNextVelocities()
+        #self.frontMotor.setJointVelocity(vr)
+        #self.steeringMotor.setJointPosition(vl)
+        self.hal.triggerStep()
 
 
 class robot(object):
@@ -73,8 +74,8 @@ class robot(object):
         self.logger = logging.getLogger('robot')
         self.logger.setLevel('DEBUG')
         self.logger.debug("Initializing robot!")
-        self.val = vrepCommunicationAPI()  # Creating VehicleAbstractionLayer
-        self.val.initialize()
+        self.hal = vrepCommunicationAPI()  # Creating VehicleAbstractionLayer
+        self.hal.initialize()
         self.vc = velocityContainer()
         self.logger.info("Robot instance has been initialized!")
 
