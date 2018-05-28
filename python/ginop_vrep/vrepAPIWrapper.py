@@ -79,13 +79,13 @@ class VelocityControlledJoint(AbstractJoint):
     def setJointVelocity(self, TargetVelocity):
         return_code = vrep.simxSetJointTargetVelocity(self.clientID, self.objectHandle, TargetVelocity, vrep.simx_opmode_streaming)
         try:
-            self.handleReturnValue(return_code, msg = ' setting velocity for :{0}id:{1}'.format(self.name,self.objectHandle))
+            self.handleReturnValue(return_code, msg = ' simxSetJointTargetVelocity :{0} id:{1}'.format(self.name,self.objectHandle))
         except Exception as e:
             pass
 
     def getJointVelocity(self):
-        return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_buffer)
-        self.handleReturnValue(return_code, msg = ' getting Joint velocity for {0} id:{1}'.format(self.name,self.objectHandle ))
+        return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_blocking)
+        self.handleReturnValue(return_code, msg = 'simxGetObjectFloatParameter for {0} id:{1}'.format(self.name,self.objectHandle))
         return velocity
 
 class PositionControlledJoint(AbstractJoint):
@@ -171,5 +171,6 @@ if __name__ == "__main__":
     for i in range(1000):
         frontMotor.setJointVelocity(sin(i/10))
         steeringMotor.setJointPosition(0)
+        print(frontMotor.getJointVelocity())
         VCA.triggerStep()
     VCA.closeConnection()

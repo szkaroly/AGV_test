@@ -46,9 +46,11 @@ class UnicycleRobot(AbstractRobot):
     def __init__(self, wheelRadius, L, name = 'UnicycleRobot'):
         self.kinematics = UnicycleKinematics(wheelRadius, L)
         tc = TrackingController(self.kinematics, maxVel = 1.5, k1 = 0.5, k2 = 0.5, k3 = 1)
-        self.frontMotor = VelocityControlledJoint('frontMotor')
-        self.steeringMotor = PositionControlledJoint('steeringMotor')
-        joints = [self.frontMotor, self.steeringMotor]
+        frontMotor = VelocityControlledJoint('frontMotor')
+        steeringMotor = PositionControlledJoint('steeringMotor')
+        # Putting them into a list , that is passed to the VREP instance
+        joints = [frontMotor, steeringMotor]
+        #Initialize VREP communication
         HardwareAbstractionLayer = vrepCommunicationAPI(joints)
         self.vc = velocityContainer()
         AbstractRobot.__init__(self,

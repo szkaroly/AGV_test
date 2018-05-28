@@ -8,7 +8,6 @@ import logging
 import math
 from math import cos, sin, atan2, tan
 from ginop_control import DataRecorder
-from rtplot import RealtimePlot
 import numpy as np
 
 import matplotlib.pyplot as plt
