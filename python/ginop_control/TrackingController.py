@@ -52,8 +52,7 @@ class TrackingController():
 #        if velocity > self.MaxVelocity: #saturaton on the linear velocity
 #            velocity = self.MaxVelocity
         angularVelocity = RefAngularVelocity-(((self.k2*RefVelocity*ery)+(self.k3*abs(RefVelocity)*tan(orib)))*(cos(orib)*cos(orib)));
-        wheelAngle = atan2(angularVelocity*self.kinematics.L,velocity);
-        return velocity.item(0), wheelAngle
+        return velocity.item(0), angularVelocity.item(0)
 
 if __name__ == "__main__":
     import unittest

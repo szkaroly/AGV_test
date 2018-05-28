@@ -1,4 +1,4 @@
-from math import cos, sin, tan
+from math import cos, sin, tan, atan2
 import numpy as np
 
 class AGVKinematics(object):
@@ -19,6 +19,9 @@ class AGVKinematics(object):
         @param wheelVelocities : list of wheel velocities in the defined order
         '''
         raise NotImplementedError('transformWheelVelocityToRobot function not implemented!')
+
+    def InputTransformation(self, velocity, angularVelocity):
+        raise NotImplemented("InputTransformation not implemented!")
 
     def calculateDistanceTraveled(self, dt, Position, LinearVelocity, wheelAngle):
         x = Position[0]
@@ -44,7 +47,11 @@ class AGVKinematics(object):
         result = (oldPos+posDiff)
         return result
 
-
+'''
+% type = 3: differentially driven car, in this case the inputs and outputs are:
+%   control1: the angular velocity of the left wheel
+%   control2: the angular velocity of the right wheel
+'''
 class DiffDriveKinematics(AGVKinematics):
     def __init__(self, wheelRadius = 0.45 , L = 1, axisDistance = 0.25):
         AGVKinematics.__init__(self, wheelRadius = wheelRadius, L = L, name = 'DiffDriveKinematics')
@@ -62,6 +69,13 @@ class DiffDriveKinematics(AGVKinematics):
         omega = (self.wheelRadius/self.axisDistance) * (vr-vl)
         return v, omega
 
+    def InputTransformation(self, velocity, angularVelocity):
+        D = self.axisDistance
+        r = self.wheelRadius
+        control1 = (velocity - angularVelocity * D) /r
+        control2 = (velocity + angularVelocity * D) /r
+        return control1, control2
+
 
 class DiffDriveTrajectoryCommand:
     def __init__(self, linearVelocity, angularVelocity, steeringAngle, vr, vl):
@@ -71,14 +85,12 @@ class DiffDriveTrajectoryCommand:
         self.vr = np.asscalar(vr)
         self.vl = np.asscalar(vl)
 
-    def printTypes(self):
-        print('linearVelocity: {0}, type: {1}'.format(self.linearVelocity,type(self.linearVelocity)))
-        print('angularVelocity: {0}, type: {1}'.format(self.angularVelocity,type(self.angularVelocity)))
-        print('steeringAngle: {0}, type: {1}'.format(self.steeringAngle,type(self.steeringAngle)))
-        print('vr: {0}, type: {1}'.format(self.vr,type(self.vr)))
-        print('vl: {0}, type: {1}'.format(self.vl,type(self.vl)))
-
-
+'''
+% type == 1: steered front wheel, in this case the inputs and outputs are:
+%   L: distance between the axes of the front and rear wheels
+%   control1: the linear velocity of the car
+%   control2: the wheel angle
+'''
 class UnicycleKinematics(AGVKinematics):
     def __init__(self, wheelRadius = 0.1, L = 1):
         AGVKinematics.__init__(self, wheelRadius = wheelRadius, L = L, name = 'Unicycle Kinematics')
@@ -95,6 +107,11 @@ class UnicycleKinematics(AGVKinematics):
         wheel_angular_velocity = wheelVelocities[0]
         v = wheel_angular_velocity * self.wheelRadius
         return v, 0
+
+    def InputTransformation(self, velocity, angularVelocity):
+        control1 = velocity
+        control2 = atan2(angularVelocity*self.L, velocity)
+        return control1, control2
 
 class UnicycleTrajectoryCommand:
     def __init__(self, wheelVelocity, steeringAngleTarget):

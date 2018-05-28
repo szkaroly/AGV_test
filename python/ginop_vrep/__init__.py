@@ -9,4 +9,4 @@ except:
     print('--------------------------------------------------------------')
     print('')
 
-from .vrepAPIWrapper import vrepCommunicationAPI, PositionControlledJoint, VelocityControlledJoint
+from .vrepAPIWrapper import vrepCommunicationAPI, PositionControlledJoint, VelocityControlledJoint, DummyObject

@@ -70,10 +70,10 @@ class VelocityControlledJoint(AbstractJoint):
     def __init__(self, name):
         AbstractJoint.__init__(self, name)
 
-    def initializeJoint(self):
+    def initialize(self):
         return_code = vrep.simxSetJointTargetVelocity(self.clientID, self.objectHandle, 0, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code,' simxSetJointTargetVelocity first call ->{0} id:{1}'.format(self.name,self.objectHandle))
-        return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_streaming)
+        return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_blocking)
         self.handleReturnValue(return_code, ' simxGetObjectFloatParameter first call ->{0} id:{1}'.format(self.name,self.objectHandle))
 
     def setJointVelocity(self, TargetVelocity):
@@ -92,20 +92,33 @@ class PositionControlledJoint(AbstractJoint):
     def __init__(self, name):
         AbstractJoint.__init__(self, name)
 
-    def initializeJoint(self):
+    def initialize(self):
         return_code = vrep.simxSetJointTargetPosition(self.clientID, self.objectHandle, 0, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code,' simxSetJointTargetPosition first call ->{0}'.format(self.name))
-        return_code, position = vrep.simxGetJointPosition(self.clientID, self.objectHandle, vrep.simx_opmode_streaming)
+        return_code, position = vrep.simxGetJointPosition(self.clientID, self.objectHandle, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code,' simxGetJointPosition first call->{0}'.format(self.name))
 
     def getJointPosition(self):
-        return_code, position = vrep.simxGetJointPosition(self.clientID, self.objectHandle, vrep.simx_opmode_buffer)
+        return_code, position = vrep.simxGetJointPosition(self.clientID, self.objectHandle, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, msg = ' while getting Joint position for: {0}'.format(self.name))
         return position
 
     def setJointPosition(self, TargetPosition):
         return_code = vrep.simxSetJointTargetPosition(self.clientID, self.objectHandle, TargetPosition, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, msg = 'setting target position for :{0}'.format(self.name))
+
+class DummyObject(AbstractObject):
+    def __init__(self, name):
+        AbstractObject.__init__(self, name, typename = 'DummyObject')
+
+    def initialize(self):
+        pass
+
+    def getObjectPosition(self):
+        return_code, x, y, z = vrep.simxGetObjectPosition(self.clientID, self.objectHandle, -1, vrep.simx_opmode_oneshot_wait)
+        self.handleReturnValue(return_value, ' -> getting object position for {0}'.format(self.name))
+        return x,y,z
+
 
 # This class is responsible for initiating the communication to the VREP Simulator
 class vrepCommunicationAPI(object):
@@ -120,7 +133,7 @@ class vrepCommunicationAPI(object):
     def initialize(self):
         self.startConnection()
         self.getObjectHandles()
-        self.initializeMotors()
+        self.initializeObjects()
 
     def startConnection(self, ip='127.0.0.1', port=19997, synchronousMode=True):
         vrep.simxFinish(-1)
@@ -149,9 +162,9 @@ class vrepCommunicationAPI(object):
         for joint in self.joints:
             joint.getObjectHandle(self.clientID)
 
-    def initializeMotors(self):
-        for joint in self.joints:
-            joint.initializeJoint()
+    def initializeObjects(self):
+        for object in self.joints:
+            object.initialize()
 
 
 if __name__ == "__main__":
