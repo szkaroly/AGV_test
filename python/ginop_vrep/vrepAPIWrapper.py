@@ -73,14 +73,15 @@ class VelocityControlledJoint(AbstractJoint):
     def initializeJoint(self):
         return_code = vrep.simxSetJointTargetVelocity(self.clientID, self.objectHandle, 0, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code,' simxSetJointTargetVelocity first call ->{0} id:{1}'.format(self.name,self.objectHandle))
-        #return_code, position = vrep.simxGetJointPosition(self.clientID, self.objectHandle, vrep.simx_opmode_streaming)
-        #self.handleReturnValue(return_code,' simxGetJointPosition first call->{0}'.format(self.name))
         return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_streaming)
         self.handleReturnValue(return_code, ' simxGetObjectFloatParameter first call ->{0} id:{1}'.format(self.name,self.objectHandle))
 
     def setJointVelocity(self, TargetVelocity):
         return_code = vrep.simxSetJointTargetVelocity(self.clientID, self.objectHandle, TargetVelocity, vrep.simx_opmode_streaming)
-        self.handleReturnValue(return_code, msg = ' setting velocity for :{0}id:{1}'.format(self.name,self.objectHandle))
+        try:
+            self.handleReturnValue(return_code, msg = ' setting velocity for :{0}id:{1}'.format(self.name,self.objectHandle))
+        except Exception as e:
+            pass
 
     def getJointVelocity(self):
         return_code, velocity = vrep.simxGetObjectFloatParameter(self.clientID, self.objectHandle, self.jointVelocityParamID, vrep.simx_opmode_buffer)
@@ -169,6 +170,6 @@ if __name__ == "__main__":
     #Execute the trajectory..
     for i in range(1000):
         frontMotor.setJointVelocity(sin(i/10))
-        rightMotor.setJointVelocity(0)
+        steeringMotor.setJointPosition(0)
         VCA.triggerStep()
     VCA.closeConnection()
