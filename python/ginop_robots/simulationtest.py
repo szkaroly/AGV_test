@@ -20,15 +20,15 @@ class SimulationApp:
         self.logger.debug("Application has started!")
 
         self.myRobot = robot()
-        self.tc = TrackingController(maxVel=25, kinematics=DiffDriveKinematics(wheelRadius=0.230/2, l= 0.5, axisDistance=0.275*2))
+        self.tc = TrackingController(maxVel=5, kinematics=DiffDriveKinematics(wheelRadius=0.2, l= 0.5, axisDistance=0.275*2))
         self.dr = DataRecorder(tag='norm')
         self.dr_sim = DataRecorder(tag='sim')
         # Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
-        initial_tangent = np.array([[1], [0]])
+        initial_tangent = np.array([[10], [0]])
         final_position = np.array([[10], [10]])
         final_tangent = np.array([[10], [12]])
-        self.dt = 0.1
+        self.dt = 0.05
         self.time = time
         self.reference_trajectory = generateBezier(initial_pos, initial_tangent, final_tangent, final_position, self.dt, self.time)
         self.reference_input = generateReferenceInput(self.reference_trajectory, self.dt)
@@ -59,8 +59,8 @@ class SimulationApp:
 
                 # Push commands to VREP & iterate
                 self.myRobot.val.setForkMotorPositionTarget(0.25)
-                #self.myRobot.val.setSteeringAngleTarget(command.steeringAngle)
-                self.myRobot.appendNewVelocityTrajectory((command.vr, command.vl))
+                self.myRobot.val.setSteeringAngleTarget(command.steeringAngle)
+                self.myRobot.appendNewVelocityTrajectory((command.linearVelocity, command.vl))
                 self.myRobot.executeTrajectory()
 
                 # Pull new values
@@ -81,7 +81,7 @@ class SimulationApp:
                 self.OldX[2] = newPos_reference[2]
                 self.dr.recordPosition(newPos_reference[0], newPos_reference[1], newPos_reference[2])
                 self.dr_sim.recordSimData(command.linearVelocity, command.angularVelocity, command.steeringAngle,
-                                     velocity_sim, angular_velocity_sim, wheel_angle_sim,
+                                     vl_sim, angular_velocity_sim, wheel_angle_sim,
                                      vr_sim, vl_sim, command.vr, command.vl)
                 self.dr_sim.recordPosition(newOdo_sim[0], newOdo_sim[1],newOdo_sim[2])
 
@@ -140,4 +140,4 @@ figp.line(df_pos.x, df_pos.y, legend = 'sim')
 figp.line(df_pos_ref.x, df_pos_ref.y, color = 'red', legend = 'ref')
 figp.legend.click_policy = 'hide'
 output_file('pos_steer.html')
-show(column(figp,figSteer))
+show(column(figp,figSteer)) 
