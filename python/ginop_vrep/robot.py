@@ -38,13 +38,16 @@ class UnicycleRobot(AbstractRobot):
                             name = name)
 
     def executeControl(self, vel, angvel):
+        """ Maps the given velocity & angular velocity to control inputs, and sets them as a target """
         targetVel, targetSteeringAngle = self.kinematics.InputTransformation(vel, angvel)
-        self.frontMotor.setJointVelocity(targetVel / self.kinematics.wheelRadius)
+        self.frontMotor.setJointVelocity(targetVel)
         self.steeringMotor.setJointPosition(targetSteeringAngle)
         #print('commanding: {0} || {1}'.format(targetVel / self.kinematics.wheelRadius, targetSteeringAngle ))
 
     def executeTrajectory(self):
+        """ Triggers a simulation step in the layer below"""
         self.hal.triggerStep()
+
 
 
 class robot(object):

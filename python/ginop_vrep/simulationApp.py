@@ -1,17 +1,13 @@
-from vrepAPIWrapper import vrepCommunicationAPI
-from robot import UnicycleRobot
-from ginop_control import DiffDriveKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier
-
+import matplotlib.pyplot as plt
 import time
 import logging
-
-import math
-from math import cos, sin, atan2, tan
-from ginop_control import DataRecorder
 import numpy as np
+from math import cos, sin, atan2, tan
 
-import matplotlib.pyplot as plt
 
+from robot import UnicycleRobot
+from ginop_control import DiffDriveKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier, DataRecorder
+from ginop_control import DataRecorder
 
 class SimulationApp:
     def __init__(self, time = 20):
@@ -20,7 +16,8 @@ class SimulationApp:
         self.logger = logging.getLogger('APP')
         self.logger.setLevel('INFO')
         self.logger.debug("Application has started!")
-
+        self.dr = DataRecorder()
+        self.sim = DataRecorder()
         self.myRobot = UnicycleRobot(0.15 , 0.45)
         # Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
@@ -42,19 +39,38 @@ class SimulationApp:
         v, angularVel = self.myRobot.TrackingController.calculateTrackingControl(self.OldX, RefVelocity, RefAngularVelocity, self.reference_trajectory[:, index])
         return v, angularVel
 
+
+    #Exist the application, closing down the communication
     def exitApp(self):
         self.myRobot.shutdown()
+        plt.figure(1)
+        plt.subplot(311)
+        plt.plot(self.dr.pos['x'], self.dr.pos['y'])
+        plt.axis('equal')
+        plt.grid(which='major')
+        plt.subplot(312)
+        v, = plt.plot(self.dr.vel['v'], 'r', label = 'V')
+        v_sim, = plt.plot(self.sim.vel['v'], 'black', label = 'V_SIM')
+        plt.legend(handles=[v, v_sim])
+        plt.grid(which='major')
+        plt.subplot(313)
+        w, = plt.plot(self.dr.vel['w'], 'b', label = 'W')
+        w_sim, = plt.plot(self.sim.vel['w'], 'g', label = 'W_SIM')
+        plt.legend(handles=[w, w_sim])
+        plt.grid(which='major')
+        plt.show()
 
     def start(self):
         self.logger.info("Start has been called! Starting simulation...")
-        self.x = []
-        self.y = []
+
         try:
             for ii in range((int)(self.time/self.dt)):
-                print(ii)
+                print(ii/(int)(self.time/self.dt) * 100, '%')
                 vCmd, wheelAngleCmd = self.getNextCommand(ii)
                 if vCmd > 1:
                     vCmd = 1
+
+                tvCmd, twheelAng = self.myRobot.kinematics.InputTransformation(vCmd, wheelAngleCmd)
 
                 self.myRobot.executeControl(vCmd, wheelAngleCmd)
                 self.myRobot.executeTrajectory()
@@ -63,16 +79,17 @@ class SimulationApp:
                 v_frontWheel = self.myRobot.frontMotor.getJointVelocity()
                 wheel_angle_sim = self.myRobot.steeringMotor.getJointPosition()
 
-
-                v_frontWheel = v_frontWheel * 0.15
                 # Calculate new position based on the velocities
-                newPos_reference = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheelAngleCmd).flatten().tolist()
-                self.OldX[0] = newPos_reference[0]
-                self.OldX[1] = newPos_reference[1]
-                self.OldX[2] = newPos_reference[2]
+                result = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, tvCmd, wheelAngleCmd)
+                sim = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheel_angle_sim)
+                self.OldX[0] = result.item(0)
+                self.OldX[1] = result.item(1)
+                self.OldX[2] = result.item(2)
 
-                self.x.append(self.OldX[0].item(0))
-                self.y.append(self.OldX[1].item(0))
+                self.dr.recordPosition(result.item(0), result.item(1), result.item(2))
+                self.sim.recordPosition(sim.item(0), sim.item(1), sim.item(2))
+                self.dr.recordVelocity(vCmd, twheelAng, 0, 0 )
+                self.sim.recordVelocity(v_frontWheel, wheel_angle_sim, 0 , 0)
 
         except KeyboardInterrupt:
             self.logger("KeyboardInterrupt received!")
@@ -89,49 +106,3 @@ class SimulationApp:
 
 app = SimulationApp()
 app.start()
-
-import pandas as pd
-from bokeh.io import show, output_notebook, push_notebook, output_file
-from bokeh.plotting import figure
-from bokeh.layouts import column
-
-figw = 1250
-
-fig1 = figure(width = figw)
-fig1.line(app.x, app.y, legend = 'pos')
-#show(fig1)
-'''
-
-df = pd.read_csv('simvel.csv')
-df.columns
-
-fig1 = figure(width = figw)
-fig1.line(df.index, df.commandedLinearVelocity, legend = 'commandedLinearVelocity')
-fig1.line(df.index, df.linearVelocitySim, color = 'red', legend = 'linearVelocitySim')
-#fig1.line(df.index, df.commandedAngularVelocity, color = 'green', legend = 'commandedAngularVelocity')
-#fig1.line(df.index, df.angularVelocitySim, color = 'yellow', legend = 'angularVelocitySim')
-fig1.legend.click_policy = 'hide'
-'''
-
-'''fig2 = figure(width = figw)
-fig2.line(df.index, df.vl_c, legend = 'vlCmd')
-fig2.line(df.index, df.vl, legend = 'vlMsr', color = 'red')
-fig2.line(df.index, df.vr_c, legend = 'vrCmd', color = 'green')
-fig2.line(df.index, df.vr, legend = 'vrMsr', color = 'yellow')
-fig2.legend.click_policy = 'hide'
-
-output_file('vel.html')
-show(fig1)
-
-figSteer = figure()
-figSteer.line(df.index, df.commandedWheelAngle, color = 'blue' , legend = 'wheelAngCmd')
-figSteer.line(df.index, df.wheelAngleSim, color = 'red' , legend = 'wheelAngleSim')
-
-df_pos = pd.read_csv('simpos.csv')
-
-figp = figure()
-figp.line(df_pos.x, df_pos.y, legend = 'sim')
-figp.legend.click_policy = 'hide'
-output_file('pos_steer.html')
-show(column(figp,figSteer))
-'''

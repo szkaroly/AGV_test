@@ -12,7 +12,7 @@ class testTrackingController(unittest.TestCase):
 
     # Simple test case for checking the output of controller
     def generateReferenceVelocityAndPosTrajectory(self):
-        #Create logger
+        ''' This function generates a reference trajectory plot for position & velocity of the AGV '''
         mylogger = logging.getLogger('test')
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
