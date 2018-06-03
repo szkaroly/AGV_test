@@ -13,6 +13,11 @@ import logging
 
 class AbstractObject(object):
     def __init__(self, name, typename = 'plainObject'):
+        '''
+        Handles the initialization of an Abstract Object inside VREP
+        @param name -> name of the given object. This value is used for grabbing the object handle
+        @param typename -> only used for logging purposes for now
+        '''
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger("{0}-{1}".format(name,typename))
@@ -24,11 +29,17 @@ class AbstractObject(object):
         self.clientID = -1
 
     def getObjectHandle(self, clientID):
+        '''
+        Gets the objectHandle from v-rep, and stores it as a member variable(self.objectHandle)
+        '''
         self.clientID = clientID
         error, self.objectHandle= vrep.simxGetObjectHandle(self.clientID, self.name, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(error, 'while retrieving Object handle for {0}'.format(self.name))
 
     def handleReturnValue(self, return_value, msg = ''):
+        '''
+        Basic error handling depending on the return_code, returned by a v-rep api call
+        '''
         if return_value == 0:
             return  # This is fine
         elif return_value == 1:
@@ -62,11 +73,18 @@ class AbstractObject(object):
             self.logger.warning('simxStart was not yet called'+ msg)
 
 class AbstractJoint(AbstractObject):
+    '''
+    Abstract joint class
+    '''
     def __init__(self, name, typename = 'abstractJoint'):
         AbstractObject.__init__(self, name, typename)
         self.jointVelocityParamID = 2012
 
 class VelocityControlledJoint(AbstractJoint):
+    '''
+    Velocity controlled joint class.
+    Can set the target velocity, and get back the target velocity
+    '''
     def __init__(self, name):
         AbstractJoint.__init__(self, name)
 
@@ -89,6 +107,9 @@ class VelocityControlledJoint(AbstractJoint):
         return velocity
 
 class PositionControlledJoint(AbstractJoint):
+    '''
+    Position controlled joint class. Can set the target joint position, and get back the current joint position
+    '''
     def __init__(self, name):
         AbstractJoint.__init__(self, name)
 
@@ -99,11 +120,17 @@ class PositionControlledJoint(AbstractJoint):
         self.handleReturnValue(return_code,' simxGetJointPosition first call->{0}'.format(self.name))
 
     def getJointPosition(self):
+        '''
+        @returns position : the 1 dimensional position of the joint
+        '''
         return_code, position = vrep.simxGetJointPosition(self.clientID, self.objectHandle, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, msg = ' while getting Joint position for: {0}'.format(self.name))
         return position
 
     def setJointPosition(self, TargetPosition):
+        '''
+        @param TargetPosition : target position of the joint
+        '''
         return_code = vrep.simxSetJointTargetPosition(self.clientID, self.objectHandle, TargetPosition, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, msg = 'setting target position for :{0}'.format(self.name))
 
@@ -115,6 +142,9 @@ class DummyObject(AbstractObject):
         pass
 
     def getObjectPosition(self):
+        '''
+        @returns position : position array, containing the x,y,z coordinates of the object in the World coordinate frame
+        '''
         return_code, position = vrep.simxGetObjectPosition(self.clientID, self.objectHandle, -1, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, ' -> getting object position for {0}'.format(self.name))
         return position
@@ -131,11 +161,20 @@ class vrepCommunicationAPI(object):
         self.joints = jointList
 
     def initialize(self):
+        '''
+        Initialization, starts the connection, get the object handle for all passed object, and call object initialization on them
+        '''
         self.startConnection()
         self.getObjectHandles()
         self.initializeObjects()
 
     def startConnection(self, ip='127.0.0.1', port=19997, synchronousMode=True):
+        '''
+        Connects to a defined vrep instance.
+        @param ip : string : ip of the vrep instance
+        @param port : int : port number for the vrep instance
+        @param synchronousMode : bool : switch for the sync/async mode.
+        '''
         vrep.simxFinish(-1)
         self.clientID = vrep.simxStart(ip, port, True, True, 5000, 5)  # Connect to V-REP
         if self.clientID != -1:
@@ -152,17 +191,29 @@ class vrepCommunicationAPI(object):
             raise Exception("Connection Failed!")
 
     def closeConnection(self):
+        '''
+        This function gracefully shuts down the connection to the VREP instance
+        '''
         vrep.simxStopSimulation(self.clientID, vrep.simx_opmode_oneshot_wait)
         self.logger.info("Connection closed with clientID:%s", self.clientID)
 
     def triggerStep(self):
+        '''
+        Given synchronousMode, this function triggers one iteration in VREP
+        '''
         vrep.simxSynchronousTrigger(self.clientID)
 
     def getObjectHandles(self):
+        '''
+        This function calls getObjectHandle for available objects.
+        '''
         for joint in self.joints:
             joint.getObjectHandle(self.clientID)
 
     def initializeObjects(self):
+        '''
+        This function calls intialize for available objectsself.
+        '''
         for object in self.joints:
             object.initialize()
 
