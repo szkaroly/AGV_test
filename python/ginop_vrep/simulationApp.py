@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import time
 import logging
 import numpy as np
@@ -18,7 +19,7 @@ class SimulationApp:
         self.logger.debug("Application has started!")
         self.dr = DataRecorder()
         self.sim = DataRecorder()
-        self.myRobot = UnicycleRobot(0.15 , 0.4)
+        self.myRobot = UnicycleRobot(0.15/2 , 0.4)
         # Create reference trajectory & input velocity
         initial_pos = np.array([[0], [0]])
         initial_tangent = np.array([[5], [0]])
@@ -33,6 +34,7 @@ class SimulationApp:
         InitialOrientation = atan2(InitialHeading[1]-InitialPosition[1], InitialHeading[0]-InitialPosition[0])
         self.OldX = np.vstack([InitialPosition, InitialOrientation])
         self.logger.info("Initialization is finished!")
+
     def getNextCommand(self, index):
         RefVelocity = self.reference_input[0, index]
         RefAngularVelocity = self.reference_input[1, index]
@@ -63,7 +65,9 @@ class SimulationApp:
 
     #Exist the application, closing down the communication
     def exitApp(self):
+        print('\n')
         self.myRobot.shutdown()
+        plt.close('all')
         plt.figure(1)
         plt.subplot(311)
         reference_pos, = plt.plot(self.reference_trajectory[0], self.reference_trajectory[1], 'green', label = 'reference position')
@@ -84,16 +88,24 @@ class SimulationApp:
         plt.grid(which='major')
         plt.show()
 
+    def progressBar(self, value, endvalue, bar_length=20):
+
+        percent = float(value) / endvalue
+        arrow = '-' * int(round(percent * bar_length)-1) + '>'
+        spaces = ' ' * (bar_length - len(arrow))
+
+        sys.stdout.write("\rPercent: [{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
+        sys.stdout.flush()
+
     def start(self):
         self.logger.info("Start has been called! Starting simulation...")
         try:
 
+            print('\n')
             index = 0
             for time in self.frange(0, self.time + self.dt, self.dt):
-                print(time/(int)(self.time/self.dt) * 1000, '%')
+                self.progressBar(time, self.time+ self.dt, 30)
                 vCmd, wheelAngleCmd = self.getNextCommand(index)
-                if vCmd > 10:
-                    vCmd = 10
 
                 tvCmd, twheelAng = self.myRobot.kinematics.InputTransformation(vCmd, wheelAngleCmd)
 
@@ -101,21 +113,23 @@ class SimulationApp:
                 self.myRobot.executeTrajectory()
 
                 # Pull new values
-                v_frontWheel = self.myRobot.frontMotor.getJointVelocity()
+                v_frontWheelJointVelocity = self.myRobot.frontMotor.getJointVelocity()
                 wheel_angle_sim = self.myRobot.steeringMotor.getJointPosition()
-                v_frontWheel = v_frontWheel * 0.15
+                v_frontWheel = v_frontWheelJointVelocity * self.myRobot.kinematics.wheelRadius
+
                 # Calculate new position based on the velocities
                 result = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, tvCmd, wheelAngleCmd)
-                sim = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheel_angle_sim)
+                sim    = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheel_angle_sim)
                 centerPosition = self.myRobot.centerPosition.getObjectPosition()
-
                 self.OldX[0] = centerPosition[0]
                 self.OldX[1] = centerPosition[1]
                 self.OldX[2] = centerPosition[2]
 
-#                self.OldX[0] = result.item(0)
-#                self.OldX[1] = result.item(1)
-#                self.OldX[2] = result.item(2)
+                '''
+                self.OldX[0] = result.item(0)
+                self.OldX[1] = result.item(1)
+                self.OldX[2] = result.item(2)
+                '''
 
                 self.dr.recordPosition(result.item(0), result.item(1), result.item(2))
                 self.sim.recordPosition(centerPosition[0], centerPosition[1], centerPosition[2])

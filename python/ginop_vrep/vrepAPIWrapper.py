@@ -43,6 +43,7 @@ class AbstractObject(object):
         if return_value == 0:
             return  # This is fine
         elif return_value == 1:
+            print('\n')
             self.logger.debug(
                 '''There is no command reply in the input buffer ->
                  Not always an error, depending on the mode its okay''' + msg)
