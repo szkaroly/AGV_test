@@ -49,20 +49,6 @@ class UnicycleRobot(AbstractRobot):
         """ Triggers a simulation step in the layer below"""
         self.hal.triggerStep()
 
-
-
-class robot(object):
-    def __init__(self):
-        FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
-        logging.basicConfig(format=FORMAT)
-        self.logger = logging.getLogger('robot')
-        self.logger.setLevel('DEBUG')
-        self.logger.debug("Initializing robot!")
-        self.hal = vrepCommunicationAPI()  # Creating VehicleAbstractionLayer
-        self.hal.initialize()
-        self.logger.info("Robot instance has been initialized!")
-
-
 if __name__ == "__main__":
     from math import sin, cos
     uniBot = UnicycleRobot(0.2, 1)
