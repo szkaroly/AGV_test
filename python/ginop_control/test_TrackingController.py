@@ -5,7 +5,7 @@ import numpy as np
 from math import atan2
 from TrackingController import TrackingController
 from BezierUtils import generateBezier, generateReferenceInput
-
+from Kinematics import UnicycleKinematics
 from DataRecorder import DataRecorder
 
 class testTrackingController(unittest.TestCase):
@@ -18,14 +18,14 @@ class testTrackingController(unittest.TestCase):
         logging.basicConfig(format=FORMAT)
         mylogger.setLevel('DEBUG')
         dr = DataRecorder()
-        tc = TrackingController()
+        tc = TrackingController(kinematics = UnicycleKinematics(0.15 , 0.45))
 
         #Create reference trajectory & input velocity
         p1 = np.array([[0], [0]])
-        p2 = np.array([[10], [0]])
-        p3 = np.array([[10], [10]])
-        p4 = np.array([[10], [12]])
-        dt = 0.01
+        p2 = np.array([[5], [0]])
+        p4 = np.array([[5], [5]])
+        p3 = np.array([[5], [2.5]])
+        dt = 0.05
         time = 20
         reference_trajectory = generateBezier(p1, p2, p3, p4, dt, time)
         reference_input = generateReferenceInput(reference_trajectory, dt)

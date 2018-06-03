@@ -2,7 +2,7 @@ import time
 import logging
 
 from ginop_vrep import vrepCommunicationAPI, PositionControlledJoint, VelocityControlledJoint, DummyObject
-from ginop_control import UnicycleKinematics, DiffDriveTrajectoryCommand, TrackingController, generateReferenceInput, generateBezier
+from ginop_control import UnicycleKinematics, TrackingController, generateReferenceInput, generateBezier
 
 
 class AbstractRobot(object):
@@ -10,7 +10,7 @@ class AbstractRobot(object):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger(name)
-        self.logger.setLevel('DEBUG')
+        self.logger.setLevel('INFO')
         self.logger.debug("Initializing {0}!".format(name))
         self.TrackingController = TrackingController
         self.hal = HardwareAbstractionLayer
@@ -32,6 +32,7 @@ class UnicycleRobot(AbstractRobot):
         objects = [self.frontMotor, self.steeringMotor, self.centerPosition]
         #Initialize VREP communication
         HardwareAbstractionLayer = vrepCommunicationAPI(objects)
+
         AbstractRobot.__init__(self,
                             TrackingController=tc,
                             HardwareAbstractionLayer=HardwareAbstractionLayer,
@@ -40,7 +41,7 @@ class UnicycleRobot(AbstractRobot):
     def executeControl(self, vel, angvel):
         """ Maps the given velocity & angular velocity to control inputs, and sets them as a target """
         targetVel, targetSteeringAngle = self.kinematics.InputTransformation(vel, angvel)
-        self.frontMotor.setJointVelocity(targetVel)
+        self.frontMotor.setJointVelocity(targetVel / self.kinematics.wheelRadius)
         self.steeringMotor.setJointPosition(targetSteeringAngle)
         #print('commanding: {0} || {1}'.format(targetVel / self.kinematics.wheelRadius, targetSteeringAngle ))
 

@@ -115,9 +115,9 @@ class DummyObject(AbstractObject):
         pass
 
     def getObjectPosition(self):
-        return_code, x, y, z = vrep.simxGetObjectPosition(self.clientID, self.objectHandle, -1, vrep.simx_opmode_oneshot_wait)
-        self.handleReturnValue(return_value, ' -> getting object position for {0}'.format(self.name))
-        return x,y,z
+        return_code, position = vrep.simxGetObjectPosition(self.clientID, self.objectHandle, -1, vrep.simx_opmode_oneshot_wait)
+        self.handleReturnValue(return_code, ' -> getting object position for {0}'.format(self.name))
+        return position
 
 
 # This class is responsible for initiating the communication to the VREP Simulator
@@ -146,7 +146,7 @@ class vrepCommunicationAPI(object):
             vrep.simxSynchronous(self.clientID, synchronousMode)
             # start the simulation:
             vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
-            self.getObjectHandles()
+            self.logger.info('bagoy')
         else:
             self.logger.error("Connection failed to VREP!")
             raise Exception("Connection Failed!")
