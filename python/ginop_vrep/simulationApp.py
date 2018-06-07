@@ -122,15 +122,18 @@ class SimulationApp:
                 result = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, tvCmd, wheelAngleCmd)
                 sim    = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheel_angle_sim)
                 centerPosition = self.myRobot.centerPosition.getObjectPosition()
-                self.OldX[0] = centerPosition[0]
-                self.OldX[1] = centerPosition[1]
-                self.OldX[2] = centerPosition[2]
 
-                '''
-                self.OldX[0] = result.item(0)
-                self.OldX[1] = result.item(1)
-                self.OldX[2] = result.item(2)
-                '''
+
+                enableSimulationFeedback = True
+
+                if enableSimulationFeedback:
+                    self.OldX[0] = centerPosition[0]
+                    self.OldX[1] = centerPosition[1]
+                    self.OldX[2] = centerPosition[2]
+                else:
+                    self.OldX[0] = result.item(0)
+                    self.OldX[1] = result.item(1)
+                    self.OldX[2] = result.item(2)
 
                 self.dr.recordPosition(result.item(0), result.item(1), result.item(2))
                 self.sim.recordPosition(centerPosition[0], centerPosition[1], centerPosition[2])
