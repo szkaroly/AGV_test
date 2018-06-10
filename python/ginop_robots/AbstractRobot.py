@@ -1,4 +1,6 @@
 import logging
+
+
 class AbstractRobot(object):
     def __init__(self, TrackingController, HardwareAbstractionLayer, name='robot'):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'

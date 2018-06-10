@@ -3,6 +3,7 @@ from .AbstractRobot import AbstractRobot
 from ginop_vrep import vrepCommunicationAPI, PositionControlledJoint, VelocityControlledJoint, DummyObject
 from ginop_control import UnicycleKinematics, TrackingController
 
+
 class UnicycleRobot(AbstractRobot):
     def __init__(self, wheelRadius, L, name='UnicycleRobot'):
         self.kinematics = UnicycleKinematics(wheelRadius, L)
