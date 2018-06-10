@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(name='ginop_control',
       version='0.2',
-      description='Package that contains a set of algorithms and classes to move AGVs in VREP,
+      description='Package that contains a set of algorithms and classes to move AGVs in VREP',
       url='-',
       author='Dániel Rácz',
       author_email='racz.daniel.93@gmail.com',
