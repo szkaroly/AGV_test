@@ -15,11 +15,11 @@ import logging
 
 # This class is responsible for initiating the communication to the VREP Simulator
 class vrepCommunicationAPI(object):
-    def __init__(self, jointList):
+    def __init__(self, jointList, loglvl = 'INFO'):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger("vrepCommunicationAPI")
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(loglvl)
         self.clientID = -1
         self.objects = jointList
 
@@ -93,6 +93,7 @@ if __name__ == "__main__":
     joints = [frontMotor, steeringMotor]
     # Initialize VREP communication
     VCA = vrepCommunicationAPI(joints)
+    VCA.initialize()
     VCA.startConnection()
 
     # Execute the trajectory..

@@ -25,7 +25,6 @@ class UnicycleRobot(AbstractRobot):
         targetVel, targetSteeringAngle = self.kinematics.InputTransformation(vel, angvel)
         self.frontMotor.setJointVelocity(targetVel / self.kinematics.wheelRadius)
         self.steeringMotor.setJointPosition(targetSteeringAngle)
-        # print('commanding: {0} || {1}'.format(targetVel / self.kinematics.wheelRadius, targetSteeringAngle ))
 
     def executeTrajectory(self):
         """ Triggers a simulation step in the layer below"""
