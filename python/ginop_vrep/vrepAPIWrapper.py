@@ -82,12 +82,10 @@ class vrepCommunicationAPI(object):
 
 if __name__ == "__main__":
     from math import sin
-    from vrep_Objects import *
+    from .vrep_Objects import VelocityControlledJoint, PositionControlledJoint
 
     # Creating the objects...
     frontMotor = VelocityControlledJoint('frontMotor')
-    # rightMotor = VelocityControlledJoint('rightMotor')
-    # forkMotor = PositionControlledJoint('forkMotor')
     steeringMotor = PositionControlledJoint('steeringMotor')
     # Putting them into a list , that is passed to the VREP instance
     joints = [frontMotor, steeringMotor]

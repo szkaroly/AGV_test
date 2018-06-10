@@ -29,6 +29,10 @@ class AbstractObject(object):
         self.objectHandle = -1
         self.clientID = -1
 
+    def initialize(self):
+        raise NotImplemented('initialize method has not been implemented!')
+
+
     def getObjectHandle(self, clientID):
         '''
         Gets the objectHandle from v-rep, and stores it as a member variable(self.objectHandle)
