@@ -1,5 +1,5 @@
 import unittest
-from BezierUtils import generateBezier, generateReferenceInput, planarRot, planarTransform
+from Utilities import generateBezier, generateReferenceInput, planarRot, planarTransform
 
 import numpy as np
 
