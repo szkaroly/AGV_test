@@ -3,7 +3,7 @@ import time
 import logging
 from math import cos, sin, atan2, tan, pi
 
-from .BezierUtils import *
+from .Utilities import *
 from .Kinematics import DiffDriveKinematics, UnicycleKinematics
 
 
