@@ -1,5 +1,5 @@
 import unittest
-from BezierUtils import generateBezier, generateReferenceInput, planarRot, planarTransform
+from Utilities import generateBezier, generateReferenceInput, planarRot, planarTransform
 
 import numpy as np
 
@@ -27,20 +27,20 @@ class testBezierUtils(unittest.TestCase):
         M1 = planarRot(90)
         self.assertAlmostEqual(M1[(0, 0)], -0.4481, places=4)
         self.assertAlmostEqual(M1[(0, 1)], -0.8940, places=4)
-        self.assertAlmostEqual(M1[(1, 0)],  0.8940, places=4)
+        self.assertAlmostEqual(M1[(1, 0)], 0.8940, places=4)
         self.assertAlmostEqual(M1[(1, 1)], -0.4481, places=4)
 
     def testPlanarTransform(self):
         M = planarTransform(45, np.matrix([[2], [2]]), 1.5)
-        self.assertAlmostEqual(M[(0, 0)],  0.7880, places=4)
+        self.assertAlmostEqual(M[(0, 0)], 0.7880, places=4)
         self.assertAlmostEqual(M[(0, 1)], -1.2764, places=4)
-        self.assertAlmostEqual(M[(0, 2)],  3.0000, places=4)
-        self.assertAlmostEqual(M[(1, 0)],  1.2764, places=4)
-        self.assertAlmostEqual(M[(1, 1)],  0.7880, places=4)
-        self.assertAlmostEqual(M[(1, 2)],  3.0000, places=4)
-        self.assertAlmostEqual(M[(2, 0)],  0.0000, places=4)
-        self.assertAlmostEqual(M[(2, 1)],  0.0000, places=4)
-        self.assertAlmostEqual(M[(2, 2)],  1.5000, places=4)
+        self.assertAlmostEqual(M[(0, 2)], 3.0000, places=4)
+        self.assertAlmostEqual(M[(1, 0)], 1.2764, places=4)
+        self.assertAlmostEqual(M[(1, 1)], 0.7880, places=4)
+        self.assertAlmostEqual(M[(1, 2)], 3.0000, places=4)
+        self.assertAlmostEqual(M[(2, 0)], 0.0000, places=4)
+        self.assertAlmostEqual(M[(2, 1)], 0.0000, places=4)
+        self.assertAlmostEqual(M[(2, 2)], 1.5000, places=4)
 
     def testGenerateReferenceInput(self):
         p1 = np.array([[0], [0]])
@@ -56,4 +56,6 @@ class testBezierUtils(unittest.TestCase):
                              [0.0000, 2.3509, 2.7135, 2.6807, 2.2672, 1.7252, 1.2418, 0.8651, 0.5790, 0.3553, 0.1690]])
         np.testing.assert_array_almost_equal(
             reference_input, expected, decimal=4)
+
+
 unittest.main()
