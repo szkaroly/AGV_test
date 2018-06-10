@@ -1,1 +1,2 @@
-from .vrepAPIWrapper import vrepCommunicationAPI, PositionControlledJoint, VelocityControlledJoint, DummyObject
+from .vrepAPIWrapper import vrepCommunicationAPI
+from .vrep_Objects import PositionControlledJoint, VelocityControlledJoint, DummyObject

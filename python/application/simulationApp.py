@@ -5,10 +5,8 @@ import logging
 import numpy as np
 from math import cos, sin, atan2, tan
 
-from robot import UnicycleRobot
+from ginop_robots import UnicycleRobot
 from ginop_control import DiffDriveKinematics, TrackingController, generateReferenceInput, generateBezier, DataRecorder
-from ginop_control import DataRecorder
-
 
 class SimulationApp:
     def __init__(self, time=20):
