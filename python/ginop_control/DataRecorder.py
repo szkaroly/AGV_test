@@ -1,31 +1,31 @@
 import pandas as pd
-import numpy as np
 
 import time
 
+
 class DataRecorder(object):
-    def __init__(self, tag = ''):
+    def __init__(self, tag=''):
         self.tag = tag
-        self.pos = {'index': [], 'x' : [], 'y': [], 'th':[]}
+        self.pos = {'index': [], 'x': [], 'y': [], 'th': []}
         self.posIndex = 0
-        self.vel = {'index': [], 'v' : [], 'w':[], 'vr' :[], 'vl':[]}
+        self.vel = {'index': [], 'v': [], 'w': [], 'vr': [], 'vl': []}
         self.velIndex = 0
-        self.sim = {'index': [], 'commandedLinearVelocity' : [], 'commandedAngularVelocity':[], 'commandedWheelAngle':[],
-                    'angularVelocitySim':[] , 'linearVelocitySim' :[], 'wheelAngleSim':[],
-                    'vr' :[], 'vl':[], 'vr_c' :[], 'vl_c':[]}
+        self.sim = {'index': [], 'commandedLinearVelocity': [], 'commandedAngularVelocity': [],
+                    'commandedWheelAngle': [],
+                    'angularVelocitySim': [], 'linearVelocitySim': [], 'wheelAngleSim': [],
+                    'vr': [], 'vl': [], 'vr_c': [], 'vl_c': []}
         self.simIndex = 0
 
-
-    def recordPosition(self, x, y,th):
+    def recordPosition(self, x, y, th):
         ts = time.time()
-        self.posIndex = self.posIndex +1
+        self.posIndex = self.posIndex + 1
         self.pos['index'].append(self.posIndex)
         self.pos['x'].append(x)
         self.pos['y'].append(y)
         self.pos['th'].append(th)
 
     def recordVelocity(self, v, w, vr, vl):
-        self.velIndex = self.velIndex +1
+        self.velIndex = self.velIndex + 1
         self.vel['index'].append(self.velIndex)
         self.vel['v'].append(v)
         self.vel['w'].append(w)
@@ -33,13 +33,13 @@ class DataRecorder(object):
         self.vel['vl'].append(vl)
 
     def recordSimData(self, commandedLinearVelocity,
-                            commandedAngularVelocity,
-                            commandedWheelAngle,
-                            linearVelocitySim,
-                            angularVelocitySim,
-                            wheelAngleSim,
-                            vr, vl, vr_c, vl_c):
-        self.simIndex = self.simIndex +1
+                      commandedAngularVelocity,
+                      commandedWheelAngle,
+                      linearVelocitySim,
+                      angularVelocitySim,
+                      wheelAngleSim,
+                      vr, vl, vr_c, vl_c):
+        self.simIndex = self.simIndex + 1
         self.sim['index'].append(self.simIndex)
         self.sim['commandedLinearVelocity'].append(commandedLinearVelocity)
         self.sim['commandedAngularVelocity'].append(commandedAngularVelocity)

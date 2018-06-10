@@ -2,7 +2,6 @@ import numpy as np
 from math import cos, sin
 
 
-
 def generateBezier(P1: np.array, P2: np.array, P3: np.array, P4: np.array,
                    SamplingTime: float, EndTime: float) -> np.array:
     """
@@ -17,10 +16,10 @@ def generateBezier(P1: np.array, P2: np.array, P3: np.array, P4: np.array,
     t = np.arange(start=0, stop=EndTime + 2 * SamplingTime, step=SamplingTime)
     t = t / t[-1]  # ok so far
 
-    ReferencePosition = np.kron(np.power((1 - t), 3), P1)\
-        + np.kron(3 * np.power((1 - t), 2) * t, P2)\
-        + np.kron(3 * (1 - t) * np.power(t, 2), P3)\
-        + np.kron(np.power(t, 3), P4)
+    ReferencePosition = np.kron(np.power((1 - t), 3), P1) \
+                        + np.kron(3 * np.power((1 - t), 2) * t, P2) \
+                        + np.kron(3 * (1 - t) * np.power(t, 2), P3) \
+                        + np.kron(np.power(t, 3), P4)
 
     diff = np.diff(ReferencePosition)
     ReferenceOrientation = np.arctan2(diff[1], diff[0])
@@ -45,8 +44,8 @@ def generateReferenceInput(ReferenceTrajectory: np.array, SamplingTime: float, X
             phik = ReferenceTrajectory[(2, ii)]
         else:
             phik = ReferenceTrajectory[(2, ii - 1)]
-        xk = ReferenceTrajectory[(0, ii)]   # x,ref,k spatial
-        yk = ReferenceTrajectory[(1, ii)]    # y,ref,k spatial
+        xk = ReferenceTrajectory[(0, ii)]  # x,ref,k spatial
+        yk = ReferenceTrajectory[(1, ii)]  # y,ref,k spatial
         xs = ReferenceTrajectory[(0, ii + 1)]  # x,ref,k+1 spatial
         ys = ReferenceTrajectory[(1, ii + 1)]  # y,ref,k+1 spatial
         planarT = planarTransform(phik, np.matrix([[xk], [yk]]), 1)
@@ -61,7 +60,7 @@ def generateReferenceInput(ReferenceTrajectory: np.array, SamplingTime: float, X
             helper = np.matrix([[(xb * cos(phik) - yb * sin(phik)), (xb * sin(phik) + yb * cos(phik))],
                                 [-sin(phik), cos(phik)]])
             RefVel = 1 / (SamplingTime * xb) * helper * \
-                np.matrix([[xs - xk], [ys - yk]])
+                     np.matrix([[xs - xk], [ys - yk]])
 
         reference_input[(0, ii)] = RefVel[0]
         reference_input[(1, ii)] = RefVel[1]
@@ -81,7 +80,3 @@ def planarTransform(angle, position, scale):
     matrix = np.hstack([planarRot(angle), position])
     result = np.vstack([matrix, np.matrix([0, 0, 1])])
     return scale * result
-
-
-if __name__ == "__main__":
-    import unittest
