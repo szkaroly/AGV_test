@@ -208,7 +208,6 @@ class vrepCommunicationAPI(object):
             vrep.simxSynchronous(self.clientID, synchronousMode)
             # start the simulation:
             vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_blocking)
-            self.logger.info('bagoy')
         else:
             self.logger.error("Connection failed to VREP!")
             raise Exception("Connection Failed!")
