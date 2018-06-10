@@ -67,6 +67,6 @@ class UnicycleKinematics(AGVKinematics):
         AGVKinematics.__init__(self, wheelRadius=wheelRadius, L=L, name='Unicycle Kinematics')
 
     def InputTransformation(self, velocity, angularVelocity):
-        control1 = velocity
+        control1 = velocity / self.wheelRadius
         control2 = atan2(angularVelocity * self.L, velocity)
         return control1, control2

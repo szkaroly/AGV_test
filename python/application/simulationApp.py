@@ -119,7 +119,7 @@ class SimulationApp:
                 v_frontWheel = v_frontWheelJointVelocity * self.myRobot.kinematics.wheelRadius
 
                 # Calculate new position based on the velocities
-                result = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, tvCmd, wheelAngleCmd)
+                result = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, vCmd, wheelAngleCmd)
                 sim = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheel_angle_sim)
                 centerPosition = self.myRobot.centerPosition.getObjectPosition()
                 '''
