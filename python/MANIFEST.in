@@ -1,1 +1,1 @@
-include ginop_vrep/remoteApi.dll
+include vrep_norm/remoteApi.dll

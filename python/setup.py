@@ -7,7 +7,7 @@ setup(name='ginop_control',
       author='Dániel Rácz',
       author_email='racz.daniel.93@gmail.com',
       license='MIT',
-      packages=['ginop_control', 'ginop_vrep'],
+      packages=['ginop_control', 'ginop_vrep', 'vrep_norm'],
       install_requires=[
           'numpy',
           'pandas'

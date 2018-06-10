@@ -3,7 +3,7 @@ import struct
 import sys
 import os
 import ctypes as ct
-from vrepConst import *
+from .vrepConst import *
 
 #load library
 libsimx = None
@@ -18,6 +18,7 @@ try:
     else:
         file_extension = '.so'
     libfullpath = os.path.join(os.path.dirname(__file__), 'remoteApi' + file_extension)
+
     libsimx = ct.CDLL(libfullpath)
 except:
     print ('----------------------------------------------------')

@@ -1,6 +1,6 @@
 try:
-    import vrep
-except:
+    import vrep_norm as vrep
+except Exception as e:
     print('--------------------------------------------------------------')
     print('"vrep.py" could not be imported. This means very probably that')
     print('either "vrep.py" or the remoteApi library could not be found.')
@@ -8,6 +8,7 @@ except:
     print('or appropriately adjust the file "vrep.py"')
     print('--------------------------------------------------------------')
     print('')
+    print(e)
 
 import logging
 

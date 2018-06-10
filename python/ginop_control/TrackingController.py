@@ -9,7 +9,7 @@ from .Kinematics import DiffDriveKinematics, UnicycleKinematics
 
 
 class TrackingController():
-    def __init__(self, kinematics=DiffDriveKinematics(), maxVel=1.5, k1=0.5, k2=0.5, k3=1):
+    def __init__(self, kinematics, maxVel=1.5, k1=0.5, k2=0.5, k3=1):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger('trackingCtrl')
