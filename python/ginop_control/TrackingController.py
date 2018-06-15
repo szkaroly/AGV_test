@@ -9,7 +9,7 @@ from .Kinematics import DiffDriveKinematics, UnicycleKinematics
 
 
 class TrackingController():
-    def __init__(self, kinematics, maxVel=1.5, k1=0.5, k2=0.5, k3=1):
+    def __init__(self, kinematics, maxVel=1.5, k1=0.5, k2=5, k3=5):
         FORMAT = '[%(asctime)-15s][%(levelname)s][%(funcName)s] %(message)s'
         logging.basicConfig(format=FORMAT)
         self.logger = logging.getLogger('trackingCtrl')
@@ -44,7 +44,8 @@ class TrackingController():
             0]  # Tracking error reference -> Result of Left array division
         erx = eref[0];  # e,x reference
         ery = eref[1];  # e,y reference
-        orib = np.mod(np.mod(phik, 2 * pi) - np.mod(phir, 2 * pi), 2 * pi);  # orientation error, reference
+        orib = phik-phir
+        #orib = np.mod(np.mod(phik, 2 * pi) - np.mod(phir, 2 * pi), 2 * pi);  # orientation error, reference
 
         # Calculate actual velocities & angles
         velocity = (RefVelocity - self.k1 * abs(RefVelocity) * (erx + ery * cos(orib))) / cos(orib)

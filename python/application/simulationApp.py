@@ -3,6 +3,7 @@ import sys
 import logging
 import numpy as np
 from math import atan2
+from math import pi
 
 from ginop_robots import UnicycleRobot
 from ginop_control import generateReferenceInput, generateBezier, DataRecorder
@@ -23,7 +24,7 @@ class SimulationApp:
         initial_tangent = np.array([[5], [0]])
         final_position = np.array([[5], [5]])
         final_tangent = np.array([[5], [2.5]])
-        self.dt = 0.1
+        self.dt = 0.05
         self.time = time
         self.reference_trajectory = generateBezier(initial_pos, initial_tangent, final_tangent, final_position, self.dt,
                                                    self.time)
@@ -122,14 +123,14 @@ class SimulationApp:
                 result = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, vCmd, wheelAngleCmd)
                 sim = self.myRobot.kinematics.integratePosition(self.OldX, self.dt, v_frontWheel, wheel_angle_sim)
                 centerPosition = self.myRobot.centerPosition.getObjectPosition()
-
+                orientation = self.myRobot.centerPosition.getObjectOrientation()
 
                 enableSimulationFeedback = True
 
                 if enableSimulationFeedback:
                     self.OldX[0] = centerPosition[0]
                     self.OldX[1] = centerPosition[1]
-                    self.OldX[2] = centerPosition[2]
+                    self.OldX[2] = orientation[2] - pi/2
                 else:
                     self.OldX[0] = result.item(0)
                     self.OldX[1] = result.item(1)

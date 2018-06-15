@@ -182,3 +182,4 @@ class DummyObject(AbstractObject):
 
         return_code, orientation = vrep.simxGetObjectOrientation(self.clientID, self.objectHandle, -1, vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, '-> getting orientation for {0}'.format(self.name))
+        return orientation
