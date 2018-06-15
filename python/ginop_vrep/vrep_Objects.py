@@ -174,3 +174,11 @@ class DummyObject(AbstractObject):
                                                            vrep.simx_opmode_oneshot_wait)
         self.handleReturnValue(return_code, ' -> getting object position for {0}'.format(self.name))
         return position
+
+    def getObjectOrientation(self):
+        '''
+        @returns orientation : orientation array, containing the euler angles of the objectself.
+        '''
+
+        return_code, orientation = vrep.simxGetObjectOrientation(self.clientID, self.objectHandle, -1, vrep.simx_opmode_oneshot_wait)
+        self.handleReturnValue(return_code, '-> getting orientation for {0}'.format(self.name))
